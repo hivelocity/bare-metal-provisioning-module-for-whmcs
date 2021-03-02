@@ -1,17 +1,17 @@
 # bare-metal-provisioning-module-for-whmcs
-Provision Hivelocity Dedicated Servers Automatically with The Bare Metal Provisioning Modules for WHMCS
-Quick how to get started guide.
-1. Installation
+#### Provision Hivelocity Dedicated Servers Automatically with The Bare Metal Provisioning Modules for WHMCS
+###### Quick how to get started guide.
+#### 1. Installation
 - extract package to your main WHMCS directory
-2. Configuration
-2.1 Server
+#### 2. Configuration
+#### 2.1 Server
 - go to Setup → Product/Services → Servers
 - create server group
 - add new server to the group
 - select Hivelocity from Module dropdown
 - use core.hivelocity.net as Hostname and your API key as Access Hash
 - save changes
-2.2 Product
+#### 2.2 Product
 - go to Setup → Product/Services → Product/Services
 - create new product
 - go to Module Settings tab
@@ -24,7 +24,7 @@ dropdown
 Configurable Options are created
 - save changes
 - if you want to create Configurable Options press Generate Configurable Options button
-2.3 Pricing Tool addon
+#### 2.3 Pricing Tool addon
 - go to Setup → Addon Modules
 - activate Hivelocity Pricing Tool module
 - check Full Administrator checkbox
