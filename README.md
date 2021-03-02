@@ -31,3 +31,4 @@ Configurable Options are created
 - save changes
 - add modules\addons\HivelocityPricingTool\cron.php to your cron job table
 - Pricing Tool is available at Addons → Hivelocity Pricing Tool
+##### This currently only works with the six template.
