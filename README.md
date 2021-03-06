@@ -10,7 +10,7 @@
 - create server group
 - add new server to the group
 - select Hivelocity from Module dropdown
-- use core.hivelocity.net as Hostname and your API key as Access Hash (You this information from your https://my.hivelocity.net account.
+- use core.hivelocity.net as Hostname and your API key as Access Hash (Get this information from your https://my.hivelocity.net account.)
 - save changes
 #### 2.2 Product
 - go to Setup → Product/Services → Product/Services
