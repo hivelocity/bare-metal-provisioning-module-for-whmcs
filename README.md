@@ -1,7 +1,7 @@
 # bare-metal-provisioning-module-for-whmcs
 #### Provision Hivelocity Dedicated Servers Automatically with The Bare Metal Provisioning Modules for WHMCS
-###### Quick how to get started guide.
-#### All you need to get started is a Bare Metal module installed on your WHMCS, A http://my.hivelocity.net account, and a credit card on file to order servers.
+##### Quick how to get started guide.
+###### All you need to get started is a Bare Metal module installed on your WHMCS, A http://my.hivelocity.net account, and a credit card on file to order servers.
 #### 1. Installation
 - extract package to your main WHMCS directory
 #### 2. Configuration
