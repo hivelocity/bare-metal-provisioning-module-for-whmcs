@@ -15,7 +15,7 @@
 6. Give the server a Name Like Bare Metal or Dedicated Servers thne go to the bottom and click save.
 7. Click Create New Group and name it what you like.
 8. Add your Hivelocity Server to the group.
-#### 3. Create Products/Services
+#### 3a. Create Products/Services
 1. Go to System Settings -> Products and Services.
 2. Click Create a new Group and give it a name.
 3. Select the cart you want, payment gateways and click save.
