@@ -24,7 +24,7 @@
 6. Make changes as needed to the Product Details tab and click save.
 7. Click the Pricing Tab and tick Recurring. Next tick One Time/Monthly and click save. Make sure to enable one billing peroid or the product will not show up in the pricing tool. I normally just tick one time month and leave it 0.00 and click save. Then later you can mark it up in the Hivelocity pricing tool.
 #### 3b. Product Module configuration
-######If you do not do these steps in this order you may have issues with your product working correctly.
+###### If you do not do these steps in this order you may have issues with your product working correctly.
 1. Next go to the module tab and select the Server Group you created earlier from the drop down then click save.
 2. Select the Server under product you want and click save.
 3. Click generate configurable options next to the server you want then click save.
