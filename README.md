@@ -2,34 +2,37 @@
 #### Provision Hivelocity Dedicated Servers Automatically with The Bare Metal Provisioning Modules for WHMCS
 ##### Quick how to get started guide.
 ###### All you need to get started is to have the Bare Metal module installed on your WHMCS, A http://my.hivelocity.net account, and a credit card on file to order servers.
-#### 1. Installation
-- extract package to your main WHMCS directory
-#### 2. Configuration
-#### 2.1 Server
-- go to Setup → Product/Services → Servers
-- create server group
-- add new server to the group
-- select Hivelocity from Module dropdown
-- use core.hivelocity.net as Hostname and your API key as Access Hash (Get this information from your https://my.hivelocity.net account.)
-- save changes
-#### 2.2 Product
-- go to Setup → Product/Services → Product/Services
-- create new product
-- go to Module Settings tab
-- select Your server group from the Server Group dropdown and Hivelocity from the Module
-dropdown
-- select Hivelocity product and credit card
-- save changes
-- new fields will appear
-- configure product location, operating system and panel, these settings will be used if no
-Configurable Options are created
-- save changes
-- if you want to create Configurable Options press Generate Configurable Options button
-#### 2.3 Pricing Tool addon
-- go to Setup → Addon Modules
-- activate Hivelocity Pricing Tool module
-- check Full Administrator checkbox
-- save changes
-- add modules\addons\HivelocityPricingTool\cron.php to your cron job table
-- Pricing Tool is available at Addons → Hivelocity Pricing Tool
+##### This currently only works with the Six template.
+#### 1. Module Installation
+1. Upload contents of module to the root of your whmcs install.
+2. Login to WHMCS go to System settings -> Addon and Active the Hivelocity Pricing Tool Module under Addon Modules. If you would like to recieve emails on price changes click the check box next to "Check if you want to receive an email notification about the price change of Hivelocity"
+#### 2. Server Setup
+1. Next go to System settings -> Servers 
+2. Click add new server
+3. Under Module Select Hivelocity.
+4. Under Hostname enter core.hivelocity.net
+5. Under access hash enter your API Key you get out of your https://my.hivelocity.net account then click continue. 
+6. Give the server a Name Like Bare Metal or Dedicated Servers thne go to the bottom and click save.
+7. Click Create New Group and name it what you like.
+8. Add your Hivelocity Server to the group.
+#### 3. Create Products/Services
+1. Go to System Settings -> Products and Services.
+2. Click Create a new Group and give it a name.
+3. Select the cart you want, payment gateways and click save.
+4. Click Create a New Product.
+5. On the product creation screen Select Server/VPS, Select the product Group you created from the drop down, and Select the Hivelocity from the Module drop down then click continue.
+6. Make changes as needed to the Product Details tab and click save.
+7. Click the Pricing Tab and tick Recurring. Next tick One Time/Monthly and click save. Make sure to enable one billing peroid or the product will not show up in the pricing tool. I normally just tick one time month and leave it 0.00 and click save. Then later you can mark it up in the Hivelocity pricing tool.
+#### 3b. Product Module configuration
+If you do not do thesae steps in this order you may have issues with your product working correctly.
+8. Next go to the module tab and select the Server Group you created earlier from the drop down then click save.
+9. Select the Server under product you want and click save.
+10. Click generate configurable options next to the server you want then click save.
+11. Go to the Addons Menu then Hivelocity Pricing tool.
+12. You can either set your Profit marging individually or on all your servers at the top of the page. Add your percentage and click save or hit enter if you are doing them individually.
+13. Setup the cronjob - add modules\addons\HivelocityPricingTool\cron.php to your cron job table.
+
+You should now have a Bare Metal Server configured and in your store. There are other options under the module setting of the product you can configure including Metric Billing Transfer In and Out or 95% In and Out.
+
+There are also addons which are included on the order form automatically when you generate configurable options. cPanel, WHMCS, Litespeed Web Server, Managed Services, Load Balancing,  Extra Bandwidth, DDOS Protection, Data Migration and Backup & Rapid Restore. All of these addons will be added for purchase when you Generate configurable options. 
 ##### This currently only works with the six template.
