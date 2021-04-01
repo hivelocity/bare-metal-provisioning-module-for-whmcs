@@ -24,13 +24,13 @@
 6. Make changes as needed to the Product Details tab and click save.
 7. Click the Pricing Tab and tick Recurring. Next tick One Time/Monthly and click save. Make sure to enable one billing peroid or the product will not show up in the pricing tool. I normally just tick one time month and leave it 0.00 and click save. Then later you can mark it up in the Hivelocity pricing tool.
 #### 3b. Product Module configuration
-If you do not do thesae steps in this order you may have issues with your product working correctly.
-8. Next go to the module tab and select the Server Group you created earlier from the drop down then click save.
-9. Select the Server under product you want and click save.
-10. Click generate configurable options next to the server you want then click save.
-11. Go to the Addons Menu then Hivelocity Pricing tool.
-12. You can either set your Profit marging individually or on all your servers at the top of the page. Add your percentage and click save or hit enter if you are doing them individually.
-13. Setup the cronjob - add modules\addons\HivelocityPricingTool\cron.php to your cron job table.
+######If you do not do these steps in this order you may have issues with your product working correctly.
+1. Next go to the module tab and select the Server Group you created earlier from the drop down then click save.
+2. Select the Server under product you want and click save.
+3. Click generate configurable options next to the server you want then click save.
+4. Go to the Addons Menu then Hivelocity Pricing tool.
+5. You can either set your Profit marging individually or on all your servers at the top of the page. Add your percentage and click save or hit enter if you are doing them individually.
+6. Setup the cronjob - add modules\addons\HivelocityPricingTool\cron.php to your cron job table.
 
 You should now have a Bare Metal Server configured and in your store. There are other options under the module setting of the product you can configure including Metric Billing Transfer In and Out or 95% In and Out.
 
