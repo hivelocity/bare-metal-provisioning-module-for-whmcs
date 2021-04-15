@@ -3,17 +3,20 @@
 ##### Quick how to get started guide.
 ###### All you need to get started is to have the Bare Metal module installed on your WHMCS, A http://my.hivelocity.net account, and a credit card on file to order servers.
 ##### This currently only works with the Six template.
+##### Upload:
+We reccomend uploading the zip file provided directly to the server "bare-metal-provisioning-module-for-whmcs-master.zip" extract it, the resulting extraction has two folders under "bare-metal-provisioning-module-for-whmcs-master/modules/", "addons" and "servers".
 #### 1. Module Installation
-1. Upload contents of module to the root of your whmcs install.
+1. Move the contents of "addons" folder to the path of /whmcs/ installation folder. This depends on where you set your WHMCS path ex. "/var/www/html/whmcs/modules/addons/"
 2. Login to WHMCS go to System settings -> Addon and Active the Hivelocity Pricing Tool Module under Addon Modules. If you would like to recieve emails on price changes click the check box next to "Check if you want to receive an email notification about the price change of Hivelocity"
 #### 2. Server Setup
+Move the contents of "servers" folder to the path of /whmcs/ installation folder. This depends on where you set your WHMCS path ex. "/var/www/html/whmcs/modules/servers/"
 1. Next go to System settings -> Servers 
 2. Click add new server
 3. Under Module Select Hivelocity.
 4. Under Hostname enter core.hivelocity.net
-5. Under access hash enter your API Key you get out of your https://my.hivelocity.net account then click continue. 
-6. Give the server a Name Like Bare Metal or Dedicated Servers thne go to the bottom and click save.
-7. Click Create New Group and name it what you like.
+5. Under access hash enter your API Key you get out of your https://my.hivelocity.net/account then click continue.
+6. Give the server a Name Like Bare Metal or Dedicated Servers then go to the bottom and click save.
+7. Click Create New Group and name it whatever you like.
 8. Add your Hivelocity Server to the group.
 #### 3a. Create Products/Services
 1. Go to System Settings -> Products and Services.
