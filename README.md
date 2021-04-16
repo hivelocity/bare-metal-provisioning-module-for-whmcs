@@ -4,6 +4,7 @@
 ##### ***All you need to get started is to have the Bare Metal module installed on your WHMCS, A http://my.hivelocity.net account, and a credit card on file to order servers.***
 ###### This currently only works with the Six template.
 **_Upload_**:
+
 We recommend uploading the "bare-metal-provisioning-module-for-whmcs-master.zip" file using your preferred method **(scp, sftp, ftp, via cPanel file manager, etc...)** directly to the server, extract it, the resulting extraction has two folders under "bare-metal-provisioning-module-for-whmcs-master/modules/" > "addons" and "servers".
 #### 1. _Module Installation_
 1. Move the contents of "addons" folder to the path of /whmcs/ installation folder. This depends on where you set your WHMCS path ex. "/var/www/html/whmcs/modules/addons/"
