@@ -250,6 +250,9 @@ SCRIPT;
             }
         }
         
+        function remove_blank_string($var){ return ($var != ""); }
+        $options[] = array_filter($options,"remove_blank_string");
+        
         $hostName           = $params["domain"];
         
         $serviceModel       = $params["model"];
