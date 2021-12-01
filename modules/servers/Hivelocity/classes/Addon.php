@@ -202,7 +202,20 @@ SCRIPT;
         Api::setApiDetails($apiUrl, $apiKey);
         
         $serviceId          = $params["serviceid"];  
+           
+        //check if deployment exist---------------------------------------------
+        
+        $deploymentId       = Helpers::getHivelocityDeploymentCorrelation($serviceId);
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        
+        
+        if($deploymentId || $assignedDeviceId) {
             
+            throw new \Exception("Deployment in progress or device exist.");
+        }
+        
+        //----------------------------------------------------------------------
+        
         $deploymentName     = "S".$serviceId."T".time();
         
         $response           = Api::createDeployment($deploymentName);
@@ -223,30 +236,38 @@ SCRIPT;
         }
         
         $expectedOptions = array(
-            "Control Panel"                     => 6,
-            "Managed Services"                  => 7,
-            "LiteSpeed"                         => 8,
-            "WHMCS"                             => 9,
-            "Bandwidth"                         => 10,
-            "Load Balancing"                    => 11,
-            "DDOS"                              => 12,
-            "Daily Backup &amp; Rapid Restore"  => 13,
-            "Cloud Storage"                     => 14,
-            "Data Migration"                    => 15,
+            "Control Panel",
+            "Managed Services",
+            "LiteSpeed",
+            "WHMCS",
+            "Bandwidth",
+            "Load Balancing",
+            "DDOS",
+            "Daily Backup & Rapid Restore",
+            "Cloud Storage",
+            "Data Migration"
         );
         
         $options = array();
         
-        foreach($expectedOptions as $optionName => $adminConfigOptionId) {
+        if(isset($params["configoptions"]["Operating System"])) {               //config options exist, use config options
             
-            if(isset($params["configoptions"][$optionName])) {
+            foreach($expectedOptions as $optionName) {
                 
-                $options[]  = $params["configoptions"][$optionName];
+                if(isset($params["configoptions"][$optionName]) && !empty($params["configoptions"][$optionName])) {
                 
-            } else {
+                    $options[]  = $params["configoptions"][$optionName];
+                }
+            }
+            
+        } else {                                                                //use admin area options
+            
+            for($i=6; $i<20; $i++) {
                 
-                $options[]  = $params["configoption".$adminConfigOptionId];
+                if(isset($params["configoption".$i]) && !empty($params["configoption".$i])) { 
                 
+                    $options[]  = $params["configoption".$i];
+                }
             }
         }
         
@@ -293,6 +314,12 @@ SCRIPT;
     }
     
     static public function clientArea($params) {
+        
+        if(isset($_POST["hivelocityAction"])) {
+            return;
+        }
+        
+        Helpers::maintenanceDatabase();
         
         $apiUrl             = $params["serverhostname"];
         $apiKey             = $params["serveraccesshash"];
@@ -358,13 +385,44 @@ SCRIPT;
         
         $deviceDetails["ipAddresses"][] = $deviceDetails["primaryIp"];
         
+        //IPMI Data=============================================================
+        
+        $ipmiData   = Api::getIpmiData($assignedDeviceId);
+        $userIp     = $_SERVER['REMOTE_ADDR'];
+        
+        //DNS Data==============================================================
+        
+        $domainList             = Api::getDomainList();
+        $correlatedDomainIds    = Helpers::getHivelocityDomainCorrelationByServiceId($serviceId);
+        
+        
+        
+        foreach($domainList as $key => $domainData) {
+            
+            if(!in_array($domainData["domainId"], $correlatedDomainIds)) {
+                
+                unset($domainList[$key]);
+            }
+        } 
+        
+        //======================================================================
+        
+        if(Helpers::isTwentyOne()) {
+            $templateFile = 'templates/tpl/clientareatwentyone';
+        } else {
+            $templateFile = 'templates/tpl/clientareasix';
+        }
+        
         return array(
-            'templatefile' => 'templates/tpl/clientarea',
+            'templatefile' => $templateFile,
             'vars' => array(
                 'serviceId'         => $serviceId,
                 'initialPassword'   => $initialPassword["password"],
                 'deviceDetails'     => $deviceDetails,
                 'orderStatus'       => ucwords($orderStatus),
+                'ipmiData'          => $ipmiData,
+                'userIp'            => $userIp,
+                'domainList'        => $domainList,
             ),
         );
     }
@@ -419,5 +477,42 @@ SCRIPT;
         }
         
         Api::shutdownDevice($assignedDeviceId);
+    }
+    
+    static public function reload($params) {
+        
+        $apiUrl             = $params["serverhostname"];
+        $apiKey             = $params["serveraccesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $serviceId          = $params["serviceid"];
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        
+        if($assignedDeviceId === false) {
+            throw new \Exception("Device is not assigned");
+        }
+        
+        if(isset($params["configoptions"]["Operating System"])) {
+            $osName           = $params["configoptions"]["Operating System"];
+        } else {
+            $osName           = $params["configoption5"];
+        }
+        
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        $remoteProductId    = Helpers::getRemoteProductIdByProductId($productId);
+        
+        $remoteProductOS    = Api::getProductOS($remoteProductId);
+        $osId               = false;
+        
+        foreach($remoteProductOS as $os) {
+            
+            if($os["name"] == $osName) {
+                $osId = $os["id"];
+                break;
+            }
+        }
+        
+        Api::reloadDevice($assignedDeviceId, $osId);
     }
 }

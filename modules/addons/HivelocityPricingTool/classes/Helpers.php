@@ -4,6 +4,30 @@ namespace HivelocityPricingTool\classes;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class Helpers {
+    
+    static public function debugLog($desc, $data) {
+        logmodulecall("HivelocityPricingTool Debug Log", $desc, $data, "", "");
+    }
+    
+    static public function getAdonConfig() {
+        
+        $pdo            = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query          = "SELECT * FROM tbladdonmodules WHERE module = 'HivelocityPricingTool'";
+        $statement      = $pdo->prepare($query);
+        $statement->execute();
+        $rows           = $statement->fetchAll();
+        $pdo->commit();
+        
+        $addonConfig    = array();
+        
+        foreach($rows as $row) {
+            $addonConfig[$row["setting"]] = $row["value"];
+        }
+        
+        return $addonConfig;
+    }
+    
     static public function isNotificationEnabled() {
         
         $pdo = Capsule::connection()->getPdo();
@@ -234,6 +258,20 @@ class Helpers {
         }
     }
     
+    static public function getServerGroupList() {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblservergroups";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
+    
     static public function getProductCustomFieldId($productId) {
         
         $productId = intval($productId);
@@ -261,6 +299,78 @@ class Helpers {
         $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly) VALUES ('product', $productId, 'hivelocityDeviceId|Server ID', 'text', 'on')";
         $statement  = $pdo->prepare($query);
         $statement->execute();
+        $pdo->commit();
+    }
+    
+    static public function hideProduct($productId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproducts SET hidden = 1 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$productId]);
+        $pdo->commit();
+    }
+    
+    static public function unhideProduct($productId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproducts SET hidden = 0 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$productId]);
+        $pdo->commit();
+    }
+    
+    static public function hideConfigOption($configOptionId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptions SET hidden = 1 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionId]);
+        $pdo->commit();
+    }
+    
+    static public function unHideConfigOption($configOptionId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptions SET hidden = 0 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionId]);
+        $pdo->commit();
+    }
+    
+    static public function hideConfigOptionSub($configOptionSubId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptionssub SET hidden = 1 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionSubId]);
+        $pdo->commit();
+    }
+    
+    static public function unHideConfigOptionSub($configOptionSubId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptionssub SET hidden = 0 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionSubId]);
         $pdo->commit();
     }
     
@@ -295,17 +405,53 @@ class Helpers {
         return $rows;
     }
     
+    static public function getProductGroupList() {
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblproductgroups";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
+    
+    static public function getConfigOptionList($configOptionGroupId) {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblproductconfigoptions WHERE gid = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionGroupId]);
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
+    
+    static public function getConfigOptionSubList($configOptionId) {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblproductconfigoptionssub WHERE configid = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionId]);
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
+    
     static public function getConfigOptionsGroupId($productId) {
         
         $productId  = intval($productId);
         
-        $name       = "Hivelocity - Product - ".$productId;
-        
         $pdo        = Capsule::connection()->getPdo();
         $pdo->beginTransaction();
-        $query      = "SELECT id FROM tblproductconfiggroups WHERE name = ?";
+        $query      = "SELECT tblproductconfiggroups.id FROM tblproductconfiggroups INNER JOIN tblproductconfiglinks ON tblproductconfiggroups.id = tblproductconfiglinks.gid WHERE tblproductconfiggroups.name LIKE '%Hivelocity%' AND tblproductconfiglinks.pid = ?";
         $statement  = $pdo->prepare($query);
-        $statement->execute([$name]);
+        $statement->execute([$productId]);
         $row        = $statement->fetch();
         $pdo->commit();
         
@@ -317,16 +463,33 @@ class Helpers {
     
     static public function createConfigOptionsGroup($productId) {
         
-        $productId = intval($productId);
+        $productId      = intval($productId);
         
-        $name       = "Hivelocity - Product - ".$productId;
+        $productName    = self::getProductName($productId);
+        $productName    = htmlspecialchars_decode($productName, ENT_QUOTES);
         
-        $pdo        = Capsule::connection()->getPdo();
+        $name           = "Configurable options for $productName product - Auto generated by module Hivelocity Bare-Metal";
+        $name           = htmlspecialchars($name, ENT_QUOTES);
+        
+        $pdo            = Capsule::connection()->getPdo();
+        
         $pdo->beginTransaction();
-        $query      = "INSERT INTO tblproductconfiggroups (name) VALUES (?)";
-        $statement  = $pdo->prepare($query);
+        $query          = "INSERT INTO tblproductconfiggroups (name) VALUES (?)";
+        $statement      = $pdo->prepare($query);
         $statement->execute([$name]);
         $pdo->commit();
+        
+        $pdo->beginTransaction();
+        $query          = "SELECT id FROM tblproductconfiggroups WHERE name = ?";
+        $statement      = $pdo->prepare($query);
+        $statement->execute([$name]);
+        $row            = $statement->fetch();
+        $pdo->commit();
+        
+        if(!isset($row["id"]) || empty($row["id"])) {
+            return false;
+        }
+        return $row["id"];
     }
     
     static public function getConfigOptionsLinkId($productId, $groupId) {
@@ -433,17 +596,290 @@ class Helpers {
         $pdo->commit();
     }
     
-    static public function addConfigOptionPrice($optionSubId, $price, $currencyId) {
+    static public function createConfigOptions($productId, $remoteProductId) {
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $remoteProductDetails   = Api::getProductDetails($remoteProductId);
+        $remoteProductOS        = Api::getProductOS($remoteProductId);
+        $remoteProductOptions   = Api::getProductOptions($remoteProductId);
+        
+        $configOptionsGroupId   = Helpers::getConfigOptionsGroupId($productId);
+        $newGroup               = false;
+        
+        if($configOptionsGroupId == false) {
+            $configOptionsGroupId   = Helpers::createConfigOptionsGroup($productId);
+            $newGroup               = true;
+        }
+        
+        $configOptionsLinkId = Helpers::getConfigOptionsLinkId($productId, $configOptionsGroupId);
+        if($configOptionsLinkId == false) {
+            Helpers::createConfigOptionsLink($productId, $configOptionsGroupId);
+        }
+        
+        $currencyId = Helpers::getCurrencyId("USD");
+        
+        if($currencyId == false) {
+            throw new \Exception("Currency 'USD' Not Configured");
+        }
+        
+        $processedOptions       = array();       
+//------------------------------------------------------------------------------
+        
+        $locationConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Location");
+        if($locationConfigOptionId == false) {
+            Helpers::createConfigOption($configOptionsGroupId, "Location");
+            $locationConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Location");
+        }
+        
+        //Helpers::clearConfigOptionSub($locationConfigOptionId);
+        
+        $processedSubOptions    = array();
+        
+        foreach($remoteProductDetails as $location => $details) {
+            
+            $name               = $location."|".Helpers::getLocationName($location);
+            $configOptionSubId  = Helpers::getConfigOptionSubId($locationConfigOptionId, $name);
+            
+            if($configOptionSubId == false) {
+                
+                Helpers::createConfigOptionSub($locationConfigOptionId, $name);
+                $configOptionSubId  = Helpers::getConfigOptionSubId($locationConfigOptionId, $name);
+            }
+            
+            $price              = floatval($details[0]["monthly_location_premium"]);
+            
+            $usdRate            = Helpers::getCurrencyRate("USD");
+            $basePrice          = $price / $usdRate;
+            
+            $currencyList       = Helpers::getCurrencyList();
+            foreach($currencyList as $currency) {
+                $currencyId     = $currency["id"];
+                $currencyRate   = $currency["rate"];
+                $priceConverted = $basePrice * $currencyRate;
+                Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+            }
+            
+            $processedSubOptions[] = $configOptionSubId;
+        }
+        
+        $localConfigOptionSubList   = Helpers::getConfigOptionSubList($locationConfigOptionId);
+            
+        foreach($localConfigOptionSubList as $localConfigOptionSubData) {
+
+            $localConfigOptionSubId     = $localConfigOptionSubData["id"];
+
+            if(in_array($localConfigOptionSubId, $processedSubOptions)) {
+
+                Helpers::unHideConfigOptionSub($localConfigOptionSubId);
+
+            } else {
+
+                Helpers::hideConfigOptionSub($localConfigOptionSubId);
+            }
+        }
+        
+        $processedOptions[]         = $locationConfigOptionId;
+//------------------------------------------------------------------------------
+        
+        $osConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Operating System");
+        if($osConfigOptionId == false) {
+            Helpers::createConfigOption($configOptionsGroupId, "Operating System");
+            $osConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Operating System");
+        }
+         
+        //Helpers::clearConfigOptionSub($osConfigOptionId);
+        
+        $processedSubOptions    = array();
+        
+        foreach($remoteProductOS as $os) {
+            
+            $name               = $os["name"]."|".$os["name"];
+            $configOptionSubId  = Helpers::getConfigOptionSubId($osConfigOptionId, $name);
+            
+            if($configOptionSubId == false) {
+                
+                Helpers::createConfigOptionSub($osConfigOptionId, $name);
+                $configOptionSubId  = Helpers::getConfigOptionSubId($osConfigOptionId, $name);
+            }
+            
+            $price              = floatval($os["monthlyPrice"]);
+            
+            $usdRate            = Helpers::getCurrencyRate("USD");
+            $basePrice          = $price / $usdRate;
+            
+            $currencyList       = Helpers::getCurrencyList();
+            
+            foreach($currencyList as $currency) {
+                $currencyId     = $currency["id"];
+                $currencyRate   = $currency["rate"];
+                $priceConverted = $basePrice * $currencyRate;
+                Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+            }
+            
+            $processedSubOptions[] = $configOptionSubId;
+        }
+        
+        $localConfigOptionSubList   = Helpers::getConfigOptionSubList($osConfigOptionId);
+            
+        foreach($localConfigOptionSubList as $localConfigOptionSubData) {
+
+            $localConfigOptionSubId     = $localConfigOptionSubData["id"];
+
+            if(in_array($localConfigOptionSubId, $processedSubOptions)) {
+
+                Helpers::unHideConfigOptionSub($localConfigOptionSubId);
+
+            } else {
+
+                Helpers::hideConfigOptionSub($localConfigOptionSubId);
+            }
+        }
+        
+        $processedOptions[]         = $osConfigOptionId;
+//------------------------------------------------------------------------------
+        
+        $remoteProductOptions   = Helpers::filterProductOptions($remoteProductOptions);
+        
+        foreach($remoteProductOptions as $optionName => $subOptions) {
+            
+            $configOptionId = Helpers::getConfigOptionId($configOptionsGroupId, $optionName);
+            
+            if($configOptionId == false) {
+                Helpers::createConfigOption($configOptionsGroupId, $optionName);
+                $configOptionId = Helpers::getConfigOptionId($configOptionsGroupId, $optionName);
+            }
+            
+            //Helpers::clearConfigOptionSub($configOptionId);
+            $processedSubOptions    = array();
+            
+            foreach($subOptions as $subOption) {
+                
+                $name               = $subOption["id"]."|".$subOption["name"];
+                $configOptionSubId  = Helpers::getConfigOptionSubId($configOptionId, $name);
+                
+                if($configOptionSubId == false) {
+                    
+                    Helpers::createConfigOptionSub($configOptionId, $name);
+                    $configOptionSubId  = Helpers::getConfigOptionSubId($configOptionId, $name);
+                }
+                
+                $price              = floatval($subOption["monthlyPrice"]);
+
+                $usdRate            = Helpers::getCurrencyRate("USD");
+                $basePrice          = $price / $usdRate;
+
+                $currencyList       = Helpers::getCurrencyList();
+
+                foreach($currencyList as $currency) {
+                    $currencyId         = $currency["id"];
+                    $currencyRate       = $currency["rate"];
+                    $priceConverted     = $basePrice * $currencyRate;
+                    Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+                }
+                $processedSubOptions[]  = $configOptionSubId;
+            }
+            
+            $localConfigOptionSubList   = Helpers::getConfigOptionSubList($configOptionId);
+            
+            foreach($localConfigOptionSubList as $localConfigOptionSubData) {
+
+                $localConfigOptionSubId     = $localConfigOptionSubData["id"];
+
+                if(in_array($localConfigOptionSubId, $processedSubOptions)) {
+
+                    Helpers::unHideConfigOptionSub($localConfigOptionSubId);
+
+                } else {
+
+                    Helpers::hideConfigOptionSub($localConfigOptionSubId);
+                }
+            }
+            
+            $processedOptions[]     = $configOptionId;
+        }
+        
+        $localConfigOptionList   = Helpers::getConfigOptionList($configOptionsGroupId);
+            
+        foreach($localConfigOptionList as $localConfigOptionData) {
+
+            $localConfigOptionId     = $localConfigOptionData["id"];
+
+            if(in_array($localConfigOptionId, $processedOptions)) {
+
+                Helpers::unHideConfigOption($localConfigOptionId);
+
+            } else {
+
+                Helpers::hideConfigOption($localConfigOptionId);
+            }
+        }
+//------------------------------------------------------------------------------
+        
+        return;
+    }
+    
+    static public function filterProductOptions($productOptions) {
+        
+        $expectedOptions = array(
+            "Control Panel",
+            "Managed Services",
+            "LiteSpeed",
+            "WHMCS",
+            "Bandwidth",
+            "Load Balancing",
+            "DDOS",
+            "Daily Backup & Rapid Restore",
+            "Cloud Storage",
+            "Data Migration",
+        );
+        
+        $filteredOptions = array();
+        
+        foreach($expectedOptions as $optionName) {
+            if(isset($productOptions[$optionName]) && !empty($productOptions[$optionName])) {
+                $filteredOptions[$optionName] = $productOptions[$optionName];
+            }
+        }
+        
+        return $filteredOptions;
+    }
+    
+    static public function setConfigOptionPrice($optionSubId, $price, $currencyId) {
         
         $optionSubId    = intval($optionSubId);
         $currencyId     = intval($currencyId);
         
         $pdo        = Capsule::connection()->getPdo();
         $pdo->beginTransaction();
-        $query      = "INSERT INTO tblpricing (type, currency, relid, msetupfee, monthly) VALUES ('configoptions', ?, ?, 0, ?)";
+        $query      = "SELECT id FROM tblpricing WHERE type = 'configoptions' AND relid = ? AND currency = ?";
         $statement  = $pdo->prepare($query);
-        $statement->execute([$currencyId, $optionSubId, $price]);
+        $statement->execute([$optionSubId, $currencyId]);
+        $row        = $statement->fetch();
         $pdo->commit();
+        
+        if(isset($row["id"]) && !empty($row["id"])) {
+            
+            $priceId    = $row["id"];
+            $pdo->beginTransaction();
+            $query      = "UPDATE tblpricing SET monthly = ? WHERE id = ?";
+            $statement  = $pdo->prepare($query);
+            $statement->execute([$price, $priceId]);
+            $pdo->commit();
+            
+        } else {
+            
+            $pdo        = Capsule::connection()->getPdo();
+            $pdo->beginTransaction();
+            $query      = "INSERT INTO tblpricing (type, currency, relid, msetupfee, monthly) VALUES ('configoptions', ?, ?, 0, ?)";
+            $statement  = $pdo->prepare($query);
+            $statement->execute([$currencyId, $optionSubId, $price]);
+            $pdo->commit();
+        }
     }
     
     static public function setProductPrice($productId, $price, $currencyId) {
@@ -515,6 +951,41 @@ class Helpers {
         } else {
             return false;
         }
+    }
+    
+    static public function getProductIdByRemoteProductId($remoteProductId) {
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query =  "SELECT id FROM tblproducts WHERE configoption1 = ?";
+        $statement = $pdo->prepare($query);
+        $statement->execute([$remoteProductId]);
+        $row = $statement->fetch();
+        $pdo->commit();
+        
+        if(!isset($row["id"]) || empty($row["id"])) {
+            return false;
+        } else {
+            return $row["id"];
+        }
+    }
+    
+    static public function getProductName($productId) {
+        
+        $productId = intval($productId);
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query =  "SELECT name FROM tblproducts WHERE id = ?";
+        $statement = $pdo->prepare($query);
+        $statement->execute([$productId]);
+        $row = $statement->fetch();
+        $pdo->commit();
+        
+        if(!isset($row["name"]) || empty($row["name"])) {
+            return false;
+        }
+        return $row["name"];
     }
     
     static public function isDeviceAssigned($deviceId) {

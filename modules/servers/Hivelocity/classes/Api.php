@@ -30,15 +30,22 @@ class Api {
             }
         }
         
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_FAILONERROR, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
+        curl_setopt($ch, CURLOPT_URL,               $url);
+        curl_setopt($ch, CURLOPT_FAILONERROR,       false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,    0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,    0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,    1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST,     $httpMethod);
+        
+        //curl_setopt($ch, CURLOPT_COOKIESESSION,     true);
+        //curl_setopt($ch, CURLOPT_COOKIEJAR,         __DIR__."/q/jar");
+        //curl_setopt($ch, CURLOPT_COOKIEFILE,        __DIR__."/q/file");
         
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 "Content-Type: application/json",
+                "User-Agent: PostmanRuntime/7.26.8",
+                "Accept: */*",
+                "Accept-Encoding: ''",
                 "X-API-KEY: $apiKey"
         ));
         
@@ -74,10 +81,10 @@ class Api {
             $response = json_decode($response, true);
             
             if(json_last_error() != JSON_ERROR_NONE) {
-                throw new \Exception("API response is invalid. ".$rawResponse);
+                throw new \Exception("API response is invalid.");
             }
             
-            if(isset($response["message"]) && isset($response["code"]) && $response["code"] != 201) {
+            if(isset($response["message"]) && isset($response["code"]) && $response["code"] > 202) {
                 
                 if(is_array($response["message"])) {
                     $message = implode(" ", $response["message"]);
@@ -88,7 +95,7 @@ class Api {
                 throw new \Exception($message);
             }
             
-            if(isset($response["description"]) && isset($response["code"]) && $response["code"] > 201) {
+            if(isset($response["description"]) && isset($response["code"]) && $response["code"] > 202) {
                 
                 if(is_array($response["description"])) {
                     $message = implode(" ", $response["description"]);
@@ -132,7 +139,7 @@ class Api {
             }
             
         } else {
-            throw new \Exception("API response is invalid.");
+            //throw new \Exception("API response is invalid.");
         }
         return $response;
     }
@@ -154,6 +161,9 @@ class Api {
     }
     
     static public function getProductOptions($productId) {
+        
+        $resource = "/product/$productId/options";
+        $response = self::sendRequest($resource);
         
         $resource = "/product/$productId/options?groupBy=upgrade";
         $response = self::sendRequest($resource);
@@ -360,6 +370,15 @@ class Api {
         return $response;
     }
     
+    static public function getIpmiData($deviceId) {
+        
+        $resource   = "/device/$deviceId/ipmi";
+        
+        $response   = self::sendRequest($resource, "GET");
+        
+        return $response;
+    }
+    
     static public function getBandwidthDetails($deviceId, $period = "day", $start = null, $end = null) {
         
         $resource   = "/bandwidth/device/$deviceId";
@@ -403,6 +422,113 @@ class Api {
     static public function shutdownDevice($deviceId) {
         
         return self::executePowerAction($deviceId, "shutdown");
+    }
+    
+    static public function reloadDevice($deviceId, $osId) {
+        
+        $resource   = "/device/$deviceId/reload";
+        
+        $postFields = array(
+            "operatingSystemId"    => $osId,
+        );
+        
+        $response   = self::sendRequest($resource, "POST", $postFields);
+        
+        return $response;
+    }
+    
+    static public function getDomainList() {
+        
+        $resource   = "/domains/";
+        
+        $response   = self::sendRequest($resource, "GET");
+        
+        return $response;
+    }
+    
+    static public function addDomain($domainName) {
+        
+        $resource   = "/domains/";
+        
+        $postFields = array(
+            "name"    => $domainName,
+        );
+        
+        $response   = self::sendRequest($resource, "POST", $postFields);
+        
+        return $response;
+    }
+    
+    static public function removeDomain($domainId) {
+        
+        $resource   = "/domains/$domainId";
+        $response   = self::sendRequest($resource, "DELETE");
+        
+        return $response;
+    }
+    
+    static public function addRecord($domainId, $recordType, $recordData) {
+        
+        $resource   = "/domains/$domainId/$recordType";
+        $response   = self::sendRequest($resource, "POST", $recordData);
+        
+        if($recordType == "mx-record") {
+            $response["type"] = "MX";
+        }
+        
+        return $response;
+    }
+    
+    static public function editRecord($domainId, $recordType, $recordId, $recordData) {
+        
+        $resource   = "/domains/$domainId/$recordType/$recordId";
+        $response   = self::sendRequest($resource, "PUT", $recordData);
+        
+        if($recordType == "mx-record") {
+            $response["type"] = "MX";
+        }
+        
+        return $response;
+    }
+    
+    static public function removeRecord($domainId, $recordType, $recordId) {
+        
+        $resource   = "/domains/$domainId/$recordType/$recordId";
+        $response   = self::sendRequest($resource, "DELETE");
+        
+        return $response;
+    }
+    
+    static public function getDnsRecordList($domainId, $recordType) {
+        
+        if($recordType == "ptr") {
+            $resource   = "/domains/ptr";
+        } else {
+            $resource   = "/domains/$domainId/$recordType";
+        }
+        $response   = self::sendRequest($resource, "GET");
+        
+        if($recordType == "mx-record") {
+            
+            foreach($response as $key => $recordData) {
+                $response[$key]["type"] = "MX";
+            }
+        }
+        
+        return $response;
+    }
+    
+    static public function allowIp($deviceId, $ip) {
+        
+        $resource   = "/device/$deviceId/ipmi/whitelist/";
+        
+        $postFields = array(
+            "custIp"    => $ip,
+        );
+        
+        $response   = self::sendRequest($resource, "POST", $postFields);
+        
+        return $response;
     }
     
     static public function parseProductList($productList) {

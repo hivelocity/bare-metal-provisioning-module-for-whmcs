@@ -6,6 +6,7 @@ require_once 'Autoloader.php';
 try {
     
     \HivelocityPricingTool\classes\Cron::priceChangeNotify();
+    \HivelocityPricingTool\classes\Cron::synchronizeProducts();
     
 } catch (Exception $e) {
     $loggedWhmcsUserId = $_SESSION["uid"];

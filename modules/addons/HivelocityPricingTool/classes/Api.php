@@ -30,16 +30,23 @@ class Api {
             }
         }
         
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_FAILONERROR, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
+        curl_setopt($ch, CURLOPT_URL,               $url);
+        curl_setopt($ch, CURLOPT_FAILONERROR,       false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,    0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,    0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,    1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST,     $httpMethod);
+        
+        //curl_setopt($ch, CURLOPT_COOKIESESSION,     true);
+        //curl_setopt($ch, CURLOPT_COOKIEJAR,         __DIR__."/q/jar");
+        //curl_setopt($ch, CURLOPT_COOKIEFILE,        __DIR__."/q/file");
         
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "X-API-KEY: $apiKey"
+                "Content-Type: application/json",
+                "User-Agent: PostmanRuntime/7.26.8",
+                "Accept: */*",
+                "Accept-Encoding: ''",
+                "X-API-KEY: $apiKey"
         ));
         
         $response   = curl_exec($ch);
@@ -154,7 +161,7 @@ class Api {
     
     static public function getProductOptions($productId) {
         
-        $resource = "/product/$productId/options";
+        $resource = "/product/$productId/options?groupBy=upgrade";
         $response = self::sendRequest($resource);
         
         return $response;

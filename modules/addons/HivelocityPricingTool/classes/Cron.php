@@ -52,7 +52,119 @@ class Cron {
                     );
                     
                     $results = localAPI($command, $postData);
-                 }
+                }
+            }
+        }
+    }
+    
+    static public function synchronizeProducts() {
+        
+        $addonConfig        = Helpers::getAdonConfig();
+        $serverGroupId      = $addonConfig["serverGroup"];
+        $productGroupId     = $addonConfig["productGroup"];
+                
+        $serverConfig       = Helpers::getServerConfigByServerGroupId($serverGroupId);
+        
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $remoteProductListRaw  = Api::getProductList();
+        $remoteProductList     = array();
+
+        foreach($remoteProductListRaw as $location => $list) {
+
+            foreach($list as $remoteProductData) {
+                
+                $remoteProductId    = $remoteProductData["product_id"];
+                
+                if(isset($remoteProductList[$remoteProductId])) {
+                    
+                    if($remoteProductData["stock"] != "unavailable") {
+                        $remoteProductList[$remoteProductId] = $remoteProductData;
+                    }
+                } else {
+                    $remoteProductList[$remoteProductId] = $remoteProductData;
+                }
+            }
+        }
+        
+        $currencyList       = Helpers::getCurrencyList();
+        foreach($currencyList as $currency) {
+            $currencyId     = $currency["id"];
+        }
+        
+        $processedProducts  = array(); 
+        
+        foreach ($remoteProductList as $remoteProductId => $remoteProductData) {
+            
+            set_time_limit(120); //long loop
+            
+            $localProductId     = Helpers::getProductIdByRemoteProductId($remoteProductId);
+            
+            if($localProductId == false && $remoteProductData["stock"] != "unavailable") {
+                //create product
+                
+                $billingInfoList    = Api::getBillingInfoList();
+                $billingId          = $billingInfoList[0]["id"];
+                
+                $price              = floatval($remoteProductData["product_monthly_price"]);
+            
+                $usdRate            = Helpers::getCurrencyRate("USD");
+                $basePrice          = $price / $usdRate;
+
+                $currencyList       = Helpers::getCurrencyList();
+                $pricing            = array();
+                
+                foreach($currencyList as $currency) {
+                    $currencyId     = $currency["id"];
+                    $currencyRate   = $currency["rate"];
+                    $priceConverted = $basePrice * $currencyRate;
+                    $pricing[$currencyId]["monthly"] = $priceConverted;
+                }
+                
+                $result             = WhmcsApi::AddProduct([
+                    "name"              => $remoteProductData["product_id"]." - ".$remoteProductData["product_cpu"]." - ".$remoteProductData["product_memory"]." - ".$remoteProductData["product_drive"],
+                    "gid"               => $productGroupId,
+                    "type"              => "server",
+                    "paytype"           => "recurring",
+                    "autosetup"         => "payment",
+                    "pricing"           => $pricing,
+                    "servergroupid"     => $serverGroupId,
+                    "module"            => "Hivelocity",
+                    "configoption1"     => $remoteProductId,
+                    "configoption2"     => $billingId,
+                ]);
+            
+                $localProductId     = $result["pid"];
+                
+                Helpers::addProductCustomField($localProductId);
+                Helpers::createConfigOptions($localProductId, $remoteProductId);
+                
+                $processedProducts[]    = $localProductId;
+                
+            } elseif($localProductId != false && $remoteProductData["stock"] != "unavailable") {
+                //update product
+                
+                Helpers::createConfigOptions($localProductId, $remoteProductId);
+                $processedProducts[]    = $localProductId;
+            }
+        }
+        
+        $localProductList   = Helpers::getProductList();
+            
+        foreach($localProductList as $localProductData) {
+
+            $localProductId = $localProductData["id"];
+
+            if(in_array($localProductId, $processedProducts)) {
+
+                Helpers::unhideProduct($localProductId);
+
+            } else {
+
+                Helpers::hideProduct($localProductId);
             }
         }
     }

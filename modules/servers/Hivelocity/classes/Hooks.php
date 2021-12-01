@@ -41,21 +41,195 @@ class Hooks {
             return;
         }
         
-        $loggedUserId = $_SESSION["uid"];
+        $loggedUserId   = $_SESSION["uid"];
         
-        if($action == "getBandwidth") {
+        if($_GET["action"] == "productdetails") {
             
-            $serviceId          = $_POST["hivelocityServiceId"];
-            $period             = $_POST["hivelocityPeriod"];
-            $customPeriod       = $_POST["hivelocityCustomPeriod"];
+            $serviceId = $_GET["id"];
             
-            $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        } else {
             
-            if(empty($loggedUserId || $loggedUserId != $serviceUserId)) {
-                die;
+            die;
+        }
+        
+        Helpers::maintenanceDatabase();
+        
+        $serviceUserId  = Helpers::getUserIdByServiceId($serviceId);
+        
+        if(empty($loggedUserId || $loggedUserId != $serviceUserId)) {
+            die;
+        }
+        
+        try {
+        
+            if($action == "getBandwidth") {
+
+                $period             = $_POST["hivelocityPeriod"];
+                $customPeriod       = $_POST["hivelocityCustomPeriod"];
+                Actions::getBandwidth($serviceId, $period, $customPeriod);
+            }
+
+            if($action == "addDomain") {
+
+                $domainName         = $_POST["hivelocityDomainName"];
+                Actions::addDomain($serviceId, $domainName);
             }
             
-            Actions::getBandwidth($serviceId, $period, $customPeriod);
+            if($action == "removeDomain") {
+
+                $hivelocityDomainId = $_POST["hivelocityDomainId"];
+                $hivelocityDomainCorrelationData = Helpers::getHivelocityDomainCorrelationByDomainId($hivelocityDomainId);
+                
+                if($hivelocityDomainCorrelationData["whmcsUserId"] != $loggedUserId) {
+                    die;
+                }
+                
+                Actions::removeDomain($serviceId, $hivelocityDomainId);
+            }
+            
+            if($action == "addRecord") {
+
+                $hivelocityDomainId = $_POST["hivelocityDomainId"];
+                $hivelocityDomainCorrelationData = Helpers::getHivelocityDomainCorrelationByDomainId($hivelocityDomainId);
+                
+                if($hivelocityDomainCorrelationData["whmcsUserId"] != $loggedUserId) {
+                    die;
+                }
+                
+                $hivelocityRecordType   = strtolower($_POST["hivelocityRecordType"])."-record";
+                
+                if($hivelocityRecordType == "a-record") {
+                    
+                    $hivelocityRecordData = array(
+                        
+                        "name"      => trim($_POST["hivelocityRecordName"]),
+                        "address"   => trim($_POST["hivelocityRecordAddress"]),
+                        "ttl"       => trim($_POST["hivelocityRecordTtl"]),
+                    );
+                } elseif($hivelocityRecordType == "aaaa-record"){
+                    
+                    $hivelocityRecordData = array(
+                        "name"      => trim($_POST["hivelocityRecordName"]),
+                        "address"   => Helpers::expandIp6(trim($_POST["hivelocityRecordAddress"])),
+                        "ttl"       => trim($_POST["hivelocityRecordTtl"]),
+                    );
+                    
+                } elseif($hivelocityRecordType == "mx-record")
+                    
+                    $hivelocityRecordData = array(
+                        
+                        "name"      => trim($_POST["hivelocityRecordName"]),
+                        "exchange"   => trim($_POST["hivelocityRecordExchange"]),
+                        "preference"   => trim($_POST["hivelocityRecordPreference"]),
+                        "ttl"       => trim($_POST["hivelocityRecordTtl"]),
+                    );
+                else {
+                    
+                    die();
+                }
+                Actions::addRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordData);
+            }
+            
+            if($action == "editRecord") {
+
+                $hivelocityDomainId = $_POST["hivelocityDomainId"];
+                $hivelocityDomainCorrelationData = Helpers::getHivelocityDomainCorrelationByDomainId($hivelocityDomainId);
+                
+                if($hivelocityDomainCorrelationData["whmcsUserId"] != $loggedUserId) {
+                    die;
+                }
+                
+                $hivelocityRecordId     = $_POST["hivelocityRecordId"];
+                $hivelocityRecordType   = strtolower($_POST["hivelocityRecordType"])."-record"  ;
+                
+                if($hivelocityRecordType == "a-record") {
+                    
+                    $hivelocityRecordData = array(
+                        
+                        "name"      => trim($_POST["hivelocityRecordName"]),
+                        "address"   => trim($_POST["hivelocityRecordAddress"]),
+                        "ttl"       => trim($_POST["hivelocityRecordTtl"]),
+                    );
+                } elseif($hivelocityRecordType == "aaaa-record"){
+                    
+                    $hivelocityRecordData = array(
+                        "name"      => trim($_POST["hivelocityRecordName"]),
+                        "address"   => Helpers::expandIp6(trim($_POST["hivelocityRecordAddress"])),
+                        "ttl"       => trim($_POST["hivelocityRecordTtl"]),
+                    );
+                    
+                } elseif($hivelocityRecordType == "mx-record")
+                    
+                    $hivelocityRecordData = array(
+                        
+                        "name"          => trim($_POST["hivelocityRecordName"]),
+                        "exchange"      => trim($_POST["hivelocityRecordExchange"]),
+                        "preference"    => trim($_POST["hivelocityRecordPreference"]),
+                        "ttl"           => trim($_POST["hivelocityRecordTtl"]),
+                    );
+                else {
+                    
+                    die();
+                }
+                
+                Actions::editRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordId, $hivelocityRecordData);
+            }
+            
+            if($action == "removeRecord") {
+
+                $hivelocityDomainId = $_POST["hivelocityDomainId"];
+                $hivelocityDomainCorrelationData = Helpers::getHivelocityDomainCorrelationByDomainId($hivelocityDomainId);
+                
+                if($hivelocityDomainCorrelationData["whmcsUserId"] != $loggedUserId) {
+                    die;
+                }
+                
+                $hivelocityRecordId     = $_POST["hivelocityRecordId"];
+                $hivelocityRecordType   = strtolower($_POST["hivelocityRecordType"])."-record"  ;
+                
+                Actions::removeRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordId);
+            }
+            
+            if($action == "getDnsData") {
+
+                $hivelocityDomainId = $_POST["hivelocityDomainId"];
+                $hivelocityDomainCorrelationData = Helpers::getHivelocityDomainCorrelationByDomainId($hivelocityDomainId);
+                
+                if($hivelocityDomainCorrelationData["whmcsUserId"] != $loggedUserId) {
+                    die;
+                }
+                
+                Actions::getDnsData($serviceId, $hivelocityDomainId);
+            }
+            
+            
+            
+            if($action == "allowIp") {
+
+                $ip             = $_POST["hivelocityIp"];
+                Actions::allowIp($serviceId, $ip);
+            }
+            
+        } catch (\Exception $e) {
+            
+            $message = "Action Failed";
+            
+            if($e->getMessage() == "Duplicate record.") {
+                $message    = "Duplicate record.";
+            }
+            
+            if(strpos($e->getMessage(), "Domain") !== false &&  strpos($e->getMessage(), "already exist.")) {
+                $message    = "Domain already exist.";
+            }
+            
+            $return     = array(
+                "result"    => "error",
+                "message"   => $message,
+            );
+            
+            $returnJson = json_encode($return);
+            echo $returnJson;
+            die;
         }
         die;
     }

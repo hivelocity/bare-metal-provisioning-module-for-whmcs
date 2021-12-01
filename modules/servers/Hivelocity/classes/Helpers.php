@@ -5,6 +5,10 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class Helpers {
     
+    static public function debugLog($desc, $data) {
+        logmodulecall("Hivelocity Debug Log", $desc, $data, "", "");
+    }
+    
     static public function maintenanceDatabase() {
     
         $pdo = Capsule::connection()->getPdo();
@@ -55,6 +59,17 @@ class Helpers {
         $pdo->commit();
         
         $pdo->beginTransaction();
+        $query =  " CREATE TABLE IF NOT EXISTS HivelocityDomainCorrelation("
+                . "     hivelocityDomainId int PRIMARY KEY NOT NULL, "
+                . "     whmcsUserId int NOT NULL, "
+                . "     whmcsServiceId int NOT NULL "
+                . " );";
+        $statement = $pdo->prepare($query);
+        $statement->execute();
+        $pdo->commit();
+        
+        
+        $pdo->beginTransaction();
         $query =  "SELECT id FROM tblemailtemplates WHERE name='Hivelocity Product Price Change'";
         $statement = $pdo->prepare($query);
         $statement->execute();
@@ -70,6 +85,24 @@ class Helpers {
             $statement->execute();
             $pdo->commit();
         }
+    }
+    
+    static public function isTwentyOne() {
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT value FROM tblconfiguration WHERE setting = 'Template'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $row        = $statement->fetch();
+        $pdo->commit();
+        
+        if($row["value"] == "twenty-one") {
+            return true;
+        } else {
+            return false;
+        }
+        
     }
     
     static public function saveHivelocityProductPrice($hivelocityProductId, $hivelocityProductPrice) {
@@ -205,6 +238,89 @@ class Helpers {
         } else {
             return false;
         }
+    }
+    
+    static public function saveHivelocityDomainCorrelation($whmcsServiceId, $whmcsUserId, $hivelocityDomainId) {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      =  "INSERT INTO HivelocityDomainCorrelation (whmcsServiceId, whmcsUserId, hivelocityDomainId) VALUES (?,?,?) ON DUPLICATE KEY UPDATE whmcsServiceId = ?, whmcsUserId = ?;";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$whmcsServiceId, $whmcsUserId, $hivelocityDomainId, $whmcsServiceId, $whmcsUserId]);
+        $pdo->commit();
+    }
+    
+    static public function getHivelocityDomainCorrelationByServiceId($whmcsServiceId) {
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT hivelocityDomainId FROM HivelocityDomainCorrelation WHERE whmcsServiceId = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$whmcsServiceId]);
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        $hivelocityDomainList = array();
+        
+        foreach($rows as $row) {
+            $hivelocityDomainList[] = $row["hivelocityDomainId"];
+        }
+        
+        if(empty($hivelocityDomainList)) {
+            return false;
+        } else {
+            return $hivelocityDomainList;
+        }
+    }
+    
+    static public function getHivelocityDomainCorrelationByUserId($whmcsUserId) {
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT hivelocityDomainId FROM HivelocityDomainCorrelation WHERE whmcsUserId = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$whmcsUserId]);
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        $hivelocityDomainList = array();
+        
+        foreach($rows as $row) {
+            $hivelocityDomainList[] = $row["hivelocityDomainId"];
+        }
+        
+        if(empty($hivelocityDomainList)) {
+            return false;
+        } else {
+            return $hivelocityDomainList;
+        }
+    }
+    
+    static public function getHivelocityDomainCorrelationByDomainId($hivelocityDomainId) {
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM HivelocityDomainCorrelation WHERE hivelocityDomainId = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$hivelocityDomainId]);
+        $row        = $statement->fetch();
+        $pdo->commit();
+        
+        if(isset($row["hivelocityDomainId"])) {
+            return $row;
+        } else {
+            return false;
+        }
+    }
+    
+    static public function removeHivelocityDomainCorrelation($hivelocityDomainId) {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      =  "DELETE IGNORE FROM HivelocityDomainCorrelation WHERE hivelocityDomainId = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$hivelocityDomainId]);
+        $pdo->commit();
     }
     
     static public function getLocationName($locationId) {
@@ -918,5 +1034,10 @@ class Helpers {
         }
         
         return $filteredOptions;
+    }
+    
+    static public function expandIp6($ip){
+        $hex = bin2hex(inet_pton($ip));
+        return implode(':', str_split($hex, 4));
     }
 }

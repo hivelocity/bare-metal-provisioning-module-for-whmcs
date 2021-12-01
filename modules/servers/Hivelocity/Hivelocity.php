@@ -99,6 +99,7 @@ function Hivelocity_ClientAreaCustomButtonArray() {
         "Boot"      => "boot",
         "Reboot"    => "reboot",
         "Shutdown"  => "shutdown",
+        "Reinstall" => "Reload",
     );
 }
 
@@ -107,6 +108,7 @@ function Hivelocity_AdminCustomButtonArray() {
         "Boot"      => "Boot",
         "Reboot"    => "Reboot",
         "Shutdown"  => "Shutdown",
+        "Reinstall" => "Reload",
     );
 }
 
@@ -149,6 +151,24 @@ function Hivelocity_Reboot($params) {
 function Hivelocity_Shutdown($params) {
     try {
         \Hivelocity\classes\Addon::shutdown($params);
+    } catch (Exception $e) {
+        // Record the error in WHMCS's module log.
+        logModuleCall(
+            'Hivelocity',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        return $e->getMessage();
+    }
+    
+    return 'success';
+}
+
+function Hivelocity_Reload($params) {
+    try {
+        \Hivelocity\classes\Addon::reload($params);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
