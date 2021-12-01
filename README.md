@@ -7,6 +7,14 @@
 
 We recommend uploading the "bare-metal-provisioning-module-for-whmcs-master.zip" file using your preferred method **(scp, sftp, ftp, via cPanel file manager, etc...)** directly to the server, extract it, the resulting extraction has two folders under "bare-metal-provisioning-module-for-whmcs-master/modules/" > "addons" and "servers".
 #### 1. _Module Installation_
+
+##### New way
+`cd ~/ | git clone git@github.com:hivelocity/bare-metal-provisioning-module-for-whmcs.git ~/. | cp -Rs ~/bare-metal-provisioning-module-for-whmcs/modules/addons/HivelocityPricingTool/ [path to modules/addons folder]/HivelocityPricingTool/ | cp -Rs ~/bare-metal-provisioning-module-for-whmcs/modules/servers/Hivelocity/ [path to modules/servers folder]/Hivelocity`
+
+Chown the directories by your web user if necessary.
+
+
+##### Old way
 1. Move the contents of "addons" folder to the path of /whmcs/ installation folder. This depends on where you set your WHMCS path ex. "/var/www/html/whmcs/modules/addons/"
 2. Login to WHMCS go to System settings -> Addon and activate the Hivelocity Pricing Tool Module under Addon Modules. If you would like to recieve emails on price changes click the check box next to "Check if you want to receive an email notification about the price change of Hivelocity"
 #### 2. _Server Setup_
