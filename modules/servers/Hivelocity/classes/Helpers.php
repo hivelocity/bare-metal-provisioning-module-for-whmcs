@@ -245,6 +245,7 @@ class Helpers {
             'SIN1' => 'Singapore, Singapore',
             'SYD1' => 'Sydney, Australia',
             'NRT1' => 'Tokyo, Japan',
+            'FLL1' => 'Fort Lauderdale, FL',
         );
         
         $locationName = $locationArray[$locationId];
