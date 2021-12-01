@@ -5,6 +5,28 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 class Addon {
     static public function config() {
         
+        $serverGropupList   = Helpers::getServerGroupList();
+        $serverGroupOptions = array();
+        
+        foreach($serverGropupList as $serverGroupData) {
+            
+            $serverGroupId      = $serverGroupData["id"];
+            $serverGroupName    = $serverGroupData["name"];
+            
+            $serverGroupOptions[$serverGroupId] = $serverGroupName;
+        }
+        
+        $productGropupList      = Helpers::getProductGroupList();
+        $productGropupOptions   = array();
+        
+        foreach($productGropupList as $productGroupData) {
+            
+            $productGroupId     = $productGroupData["id"];
+            $productGroupName   = $productGroupData["name"];
+            
+            $productGropupOptions[$productGroupId] = $productGroupName;
+        }
+        
         $configArray = array(
             
             "name"          => "Hivelocity Pricing Tool",
@@ -18,6 +40,20 @@ class Addon {
                     "Type"              => "yesno", 
                     "Size"              => "25",
                     "Description"       => "Check if you want to receive an email notification about the price change of Hivelocity products."
+                ),
+                "productGroup" => array (
+                    "FriendlyName"      => "Product Group", 
+                    "Type"              => "dropdown", 
+                    "Options"           => $productGropupOptions,
+                    "Size"              => "25",
+                    "Description"       => "Product Group for auto created products."
+                ),
+                "serverGroup" => array (
+                    "FriendlyName"      => "Server Group", 
+                    "Type"              => "dropdown", 
+                    "Options"           => $serverGroupOptions,
+                    "Size"              => "25",
+                    "Description"       => "Server Group for auto created products."
                 ),
             )
         );

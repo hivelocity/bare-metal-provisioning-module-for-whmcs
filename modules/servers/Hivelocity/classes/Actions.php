@@ -184,4 +184,186 @@ class Actions {
         die;
     }
     
+    static public function addDomain($serviceId, $domainName) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::addDomain($domainName);
+        
+        $hivelocityDomainId = $response["domainId"];
+        
+        Helpers::saveHivelocityDomainCorrelation($serviceId, $serviceUserId, $hivelocityDomainId);
+         
+        $return     = array(
+            "result"                => "success",
+            "domainName"            => $domainName,
+            "hivelocityDomainId"    => $hivelocityDomainId,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+    
+    static public function removeDomain($serviceId, $hivelocityDomainId) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::removeDomain($hivelocityDomainId);
+        
+        Helpers::removeHivelocityDomainCorrelation($hivelocityDomainId);
+         
+        $return     = array(
+            "result"                => "success",
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+    
+    static public function addRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordData) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::addRecord($hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordData);
+        
+        $hivelocityDomainId = $response["domainId"];
+        
+        $return             = array(
+            "result"                => "success",
+            "hivelocityRecordData"  => $response,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+    
+    static public function editRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordId, $hivelocityRecordData) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::editRecord($hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordId, $hivelocityRecordData);
+        
+        $hivelocityDomainId = $response["domainId"];
+        
+        $return             = array(
+            "result"                => "success",
+            "hivelocityRecordData"  => $response,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+    
+    static public function removeRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordId) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::removeRecord($hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordId);
+        
+        $return     = array(
+            "result"                => "success",
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+    
+    static public function getDnsData($serviceId, $hivelocityDomainId) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $return     = array(
+            "result"                => "success",
+        );
+        
+        $recordTypes        = array(
+            "a-record",
+            "aaaa-record",
+            "mx-record",
+        //    "ptr",
+        ); 
+        
+        foreach ($recordTypes as $recordType) {
+            $response               = Api::getDnsRecordList($hivelocityDomainId, $recordType);
+            $return[$recordType]    = $response;
+        }
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+        
+    }
+    
+    static public function allowIp($serviceId, $ip) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        
+        $response           = Api::allowIp($assignedDeviceId, $ip);
+        
+        $return     = array(
+            "result"                => "success",
+            "ipmiPageIp"            => $response,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+        
+    }
 }
