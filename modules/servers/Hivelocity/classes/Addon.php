@@ -387,7 +387,7 @@ SCRIPT;
         
         //IPMI Data=============================================================
         
-        $ipmiData   = Api::getIpmiData($assignedDeviceId);
+        //$ipmiData   = Api::getIpmiData($assignedDeviceId);
         $userIp     = $_SERVER['REMOTE_ADDR'];
         
         //DNS Data==============================================================
@@ -420,7 +420,7 @@ SCRIPT;
                 'initialPassword'   => $initialPassword["password"],
                 'deviceDetails'     => $deviceDetails,
                 'orderStatus'       => ucwords($orderStatus),
-                'ipmiData'          => $ipmiData,
+                //'ipmiData'          => $ipmiData,
                 'userIp'            => $userIp,
                 'domainList'        => $domainList,
             ),

@@ -5,7 +5,7 @@
         {if !$orderStatus}
             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabBandwidth">Bandwidth</a></li>
             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpmi">IPMI</a></li>
-            <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDns">DNS</a></li>
+            <li style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDns">DNS</a></li>
         {/if}
     </ul>
     <div class="tab-content" style="border-style: solid; border-color: #ddd; padding:5px; padding-top: 20px; border-width: 1px; border-top-style: none;" >
@@ -106,28 +106,6 @@
             <div id="tabIpmi" class="tab-pane fade">
                 <div class="container" style="width:auto">
                     <div class="row" style="margin-bottom:5px">
-                        <div class="col-sm-8" style="text-align: left">
-                            <table style="margin: auto;">
-                                <tr>
-                                    <th style="text-align: right; padding-right: 30px">Sensors</th>
-                                </tr>
-                                {foreach from = $ipmiData.sensors item = sensorData}
-                                    {if {$sensorData.reading}}
-                                        <tr>
-                                            <td style="text-align: right;padding-right: 30px;">
-                                                {$sensorData.name}
-                                            </td>
-                                            <td style="text-align: right; padding-right: 10px;">
-                                                {$sensorData.reading}
-                                            </td>
-                                            <td style="text-align: left;">
-                                                {if {$sensorData.units} == "C"}°{/if}{$sensorData.units}
-                                            </td>
-                                        </tr>
-                                    {/if}
-                                {/foreach}
-                            </table>
-                        </div>
                         <div class="col-sm-4" style="text-align: right">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ipmiModal">
                                 Connect to IPMI
@@ -136,7 +114,7 @@
                     </div>
                 </div>
             </div>
-            <div id="tabDns" class="tab-pane fade">
+            <div id="tabDns" class="tab-pane fade" style="display: none">
                 <div class="container" style="width:auto">
                     <div class="row" style="margin-bottom:5px">
                         <div class="col" style="text-align: left">
