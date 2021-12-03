@@ -390,22 +390,22 @@ SCRIPT;
         //$ipmiData   = Api::getIpmiData($assignedDeviceId);
         $userIp     = $_SERVER['REMOTE_ADDR'];
         
-        //DNS Data==============================================================
-        
-        $domainList             = Api::getDomainList();
-        $correlatedDomainIds    = Helpers::getHivelocityDomainCorrelationByServiceId($serviceId);
-        
-        
-        
-        foreach($domainList as $key => $domainData) {
-            
-            if(!in_array($domainData["domainId"], $correlatedDomainIds)) {
-                
-                unset($domainList[$key]);
-            }
-        } 
-        
-        //======================================================================
+        ////DNS Data==============================================================
+        //
+        //$domainList             = Api::getDomainList();
+        //$correlatedDomainIds    = Helpers::getHivelocityDomainCorrelationByServiceId($serviceId);
+        //
+        //
+        //
+        //foreach($domainList as $key => $domainData) {
+        //    
+        //    if(!in_array($domainData["domainId"], $correlatedDomainIds)) {
+        //        
+        //        unset($domainList[$key]);
+        //    }
+        //} 
+        //
+        ////======================================================================
         
         if(Helpers::isTwentyOne()) {
             $templateFile = 'templates/tpl/clientareatwentyone';
@@ -422,7 +422,7 @@ SCRIPT;
                 'orderStatus'       => ucwords($orderStatus),
                 //'ipmiData'          => $ipmiData,
                 'userIp'            => $userIp,
-                'domainList'        => $domainList,
+                //'domainList'        => $domainList,
             ),
         );
     }

@@ -4,7 +4,7 @@
         <li class="active nav-item"><a data-toggle="tab" class="nav-link active" href="#tabDetails">Details</a></li>
         {if !$orderStatus}
             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabBandwidth">Bandwidth</a></li>
-            <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpmi">IPMI</a></li>
+            <li  style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpmi">IPMI</a></li>
             <li style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDns">DNS</a></li>
         {/if}
     </ul>
