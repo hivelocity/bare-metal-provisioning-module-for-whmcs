@@ -36,7 +36,6 @@ class Api {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,    0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,    1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST,     $httpMethod);
-        
         //curl_setopt($ch, CURLOPT_COOKIESESSION,     true);
         //curl_setopt($ch, CURLOPT_COOKIEJAR,         __DIR__."/q/jar");
         //curl_setopt($ch, CURLOPT_COOKIEFILE,        __DIR__."/q/file");
@@ -280,9 +279,9 @@ class Api {
         return $response;
     }
     
-    static public function getServiceList() {
+    static public function getServiceList($orderId) {
         
-        $resource = "/service/";
+        $resource = "/service/?orderId=$orderId";
         
         $response = self::sendRequest($resource);
         

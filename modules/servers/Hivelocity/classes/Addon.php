@@ -342,7 +342,7 @@ SCRIPT;
             
             if($orderStatus == "complete") {
                 
-                $remoteServiceList = Api::getServiceList();
+                $remoteServiceList = Api::getServiceList($hivelocityOrderId);
                 
                 foreach($remoteServiceList as $remoteService) {
                     
@@ -355,7 +355,7 @@ SCRIPT;
                         $deviceId           = $remoteService["serviceDevices"][0]["id"];
                         Helpers::assignDevice($serviceId, $deviceId);
                         $deviceDetails      = Api::getDeviceDetails($deviceId);
-                        $initialPassword    = Api::getInitialPassword($assignedDeviceId);
+                        $initialPassword    = Api::getInitialPassword($deviceId);
                         $orderStatus        = false;
                         
                         break;
@@ -364,25 +364,9 @@ SCRIPT;
             }
         } else {
             $deviceDetails      = Api::getDeviceDetails($assignedDeviceId);
-            //$initialPassword    = Api::getInitialPassword($assignedDeviceId);
-            $initialPassword    = Api::getInitialPasswordLink($assignedDeviceId);
+            $initialPassword    = Api::getInitialPassword($assignedDeviceId);
         }
-        
-        //ip temporary fix =====================================================
-        
-        $deviceList     = Api::getDeviceList();
-        
-        foreach($deviceList as $deviceDetails2) {
-            
-            if($deviceDetails2["deviceId"] == $assignedDeviceId) {
-                
-                $deviceDetails["primaryIp"] = $deviceDetails2["primaryIp"];
-                break;
-            }
-        }
-        
-        //======================================================================
-        
+               
         $deviceDetails["ipAddresses"][] = $deviceDetails["primaryIp"];
         
         //IPMI Data=============================================================
