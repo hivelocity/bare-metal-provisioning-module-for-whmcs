@@ -267,16 +267,14 @@ class Api {
         return $response;
     }
     
-    static public function getServiceList() {
+    static public function getServiceList($orderId) {
         
-        $resource = "/service/";
+        $resource = "/service/?orderId=$orderId";
         
         $response = self::sendRequest($resource);
         
         return $response;
-    }
-    
-    
+    }    
     
     static public function getDeviceList() {
         

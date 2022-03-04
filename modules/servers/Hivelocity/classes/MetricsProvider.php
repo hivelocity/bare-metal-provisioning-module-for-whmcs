@@ -97,7 +97,7 @@ class MetricsProvider implements ProviderInterface {
             
             if($orderStatus == "complete") {
                 
-                $remoteServiceList = Api::getServiceList();
+                $remoteServiceList = Api::getServiceList($hivelocityOrderId);
                 
                 foreach($remoteServiceList as $remoteService) {
                     

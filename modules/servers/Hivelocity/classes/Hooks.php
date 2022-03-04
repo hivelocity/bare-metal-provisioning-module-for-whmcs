@@ -291,7 +291,7 @@ class Hooks {
             
             if($orderStatus == "complete") {
                 
-                $remoteServiceList = Api::getServiceList();
+                $remoteServiceList = Api::getServiceList($hivelocityOrderId);
                 
                 foreach($remoteServiceList as $remoteService) {
                     
