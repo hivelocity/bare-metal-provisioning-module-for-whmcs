@@ -8,15 +8,8 @@ $(document).ready(function() {
     addEventVpnHelp();
     addEventShowIpmiModal();
     addEventShowDnsModal();
-    addEventReinstall();
-
 });
 
-function addEventReinstall() {
-    $("#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reinstall").click(function(event) {
-        return confirm('Are you sure you want to reinstall the operating system?');
-    });
-}
 
 function addEventAllowIp() {
     $('#allowIpButton').off('click');
