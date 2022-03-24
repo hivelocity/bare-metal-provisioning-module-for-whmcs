@@ -94,27 +94,96 @@ function Hivelocity_ClientArea($params) {
     }
 }
 
-function Hivelocity_ClientAreaCustomButtonArray() {
-    return array(
+function Hivelocity_ClientAreaCustomButtonArray($params) {
+
+    if(isset($_POST["hivelocityAction"])) {
+        return;
+    }
+        
+    $apiUrl             = $params["serverhostname"];
+    $apiKey             = $params["serveraccesshash"];
+
+    $deviceActions = array(
         "Boot"      => "boot",
         "Reboot"    => "reboot",
         "Shutdown"  => "shutdown",
-        "Reinstall" => "Reload",
+        "Reinstall" => "reload",
     );
+    
+    \Hivelocity\classes\Api::setApiDetails($apiUrl, $apiKey);
+    
+    $serviceId          = $params["serviceid"];
+    $assignedDeviceId   = \Hivelocity\classes\Helpers::getAssignedDeviceId($serviceId);
+
+    if($assignedDeviceId === false) return $deviceActions;
+
+    try {
+        $devicePowerStatus = \Hivelocity\classes\Api::getDevicePowerStatus($assignedDeviceId);
+
+        if (is_null($devicePowerStatus)) return $deviceActions;
+
+        $devicePowerStatus = isset($devicePowerStatus["powerStatus"]) ? $devicePowerStatus["powerStatus"] : '';
+
+        if ($devicePowerStatus == 'ON') {
+            unset($deviceActions["Boot"]);
+        } else if ($devicePowerStatus == 'OFF') {
+            unset($deviceActions["Reboot"]);
+            unset($deviceActions["Shutdown"]);
+        }
+
+        return $deviceActions;
+    } catch (Exception $e) {
+        return $deviceActions;
+    }
 }
 
-function Hivelocity_AdminCustomButtonArray() {
-    return array(
-        "Boot"      => "Boot",
-        "Reboot"    => "Reboot",
-        "Shutdown"  => "Shutdown",
-        "Reinstall" => "Reload",
+function Hivelocity_AdminCustomButtonArray($params) {
+
+    if(isset($_POST["hivelocityAction"])) {
+        return;
+    }
+        
+    $apiUrl             = $params["serverhostname"];
+    $apiKey             = $params["serveraccesshash"];
+
+    $deviceActions = array(
+        "Boot"      => "boot",
+        "Reboot"    => "reboot",
+        "Shutdown"  => "shutdown",
+        "Reinstall" => "reload",
     );
+    
+    \Hivelocity\classes\Api::setApiDetails($apiUrl, $apiKey);
+    
+    $serviceId          = $params["serviceid"];
+    $assignedDeviceId   = \Hivelocity\classes\Helpers::getAssignedDeviceId($serviceId);
+
+    if($assignedDeviceId === false) return $deviceActions;
+
+    try {
+        $devicePowerStatus = \Hivelocity\classes\Api::getDevicePowerStatus($assignedDeviceId);
+
+        if (is_null($devicePowerStatus)) return $deviceActions;
+
+        $devicePowerStatus = isset($devicePowerStatus["powerStatus"]) ? $devicePowerStatus["powerStatus"] : '';
+
+        if ($devicePowerStatus == 'ON') {
+            unset($deviceActions["Boot"]);
+        } else if ($devicePowerStatus == 'OFF') {
+            unset($deviceActions["Reboot"]);
+            unset($deviceActions["Shutdown"]);
+        }
+
+        return $deviceActions;
+    } catch (Exception $e) {
+        return $deviceActions;
+    }
 }
 
 function Hivelocity_Boot($params) {
+
     try {
-        \Hivelocity\classes\Addon::boot($params);
+        return \Hivelocity\classes\Addon::boot($params);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -126,13 +195,12 @@ function Hivelocity_Boot($params) {
         );
         return $e->getMessage();
     }
-    
-    return 'success';
 }
 
 function Hivelocity_Reboot($params) {
+
     try {
-        \Hivelocity\classes\Addon::reboot($params);
+        return \Hivelocity\classes\Addon::reboot($params);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -144,13 +212,12 @@ function Hivelocity_Reboot($params) {
         );
         return $e->getMessage();
     }
-    
-    return 'success';
 }
 
 function Hivelocity_Shutdown($params) {
+
     try {
-        \Hivelocity\classes\Addon::shutdown($params);
+        return \Hivelocity\classes\Addon::shutdown($params);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -162,13 +229,12 @@ function Hivelocity_Shutdown($params) {
         );
         return $e->getMessage();
     }
-    
-    return 'success';
 }
 
 function Hivelocity_Reload($params) {
+
     try {
-        \Hivelocity\classes\Addon::reload($params);
+        return \Hivelocity\classes\Addon::reload($params);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -180,8 +246,8 @@ function Hivelocity_Reload($params) {
         );
         return $e->getMessage();
     }
+
     
-    return 'success';
 }
 
 function Hivelocity_MetricProvider($params) {

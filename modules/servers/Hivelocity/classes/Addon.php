@@ -1,5 +1,7 @@
 <?php
 namespace Hivelocity\classes;
+
+use DateTime;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class Addon {
@@ -355,8 +357,9 @@ SCRIPT;
                         $deviceId           = $remoteService["serviceDevices"][0]["id"];
                         Helpers::assignDevice($serviceId, $deviceId);
                         $deviceDetails      = Api::getDeviceDetails($deviceId);
-                        $initialPassword    = Api::getInitialPassword($deviceId);
+                        $initialCreds    = Api::getInitialPassword($deviceId);
                         $orderStatus        = false;
+                        $ips                = Api::getIpAssigments($deviceId);
                         
                         break;
                     }
@@ -364,33 +367,31 @@ SCRIPT;
             }
         } else {
             $deviceDetails      = Api::getDeviceDetails($assignedDeviceId);
-            $initialPassword    = Api::getInitialPassword($assignedDeviceId);
+            $initialCreds    = Api::getInitialPassword($assignedDeviceId);
+            $ips                = Api::getIpAssigments($assignedDeviceId);
         }
                
-        $deviceDetails["ipAddresses"][] = $deviceDetails["primaryIp"];
-        
-        //IPMI Data=============================================================
-        
-        //$ipmiData   = Api::getIpmiData($assignedDeviceId);
-        $userIp     = $_SERVER['REMOTE_ADDR'];
-        
-        ////DNS Data==============================================================
-        //
-        //$domainList             = Api::getDomainList();
-        //$correlatedDomainIds    = Helpers::getHivelocityDomainCorrelationByServiceId($serviceId);
-        //
-        //
-        //
-        //foreach($domainList as $key => $domainData) {
-        //    
-        //    if(!in_array($domainData["domainId"], $correlatedDomainIds)) {
-        //        
-        //        unset($domainList[$key]);
-        //    }
-        //} 
-        //
-        ////======================================================================
-        
+        $userIp = $_SERVER['REMOTE_ADDR'];
+
+        // Show correct device power status when device is reloading
+        $devicePowerStatus = $deviceDetails["isReload"] ? 'RELOADING' : $deviceDetails["powerStatus"];
+
+        // Handle password expiration
+        if (isset($initialCreds["passwordReturnsUntil"])) {
+            $passwordReturnsUntil = DateTime::createFromFormat( 'U', $initialCreds["passwordReturnsUntil"] );
+            $now = new DateTime();
+
+            $diff = $passwordReturnsUntil->diff($now);
+
+            $daysRemaining =  $diff->format('%d') + 1;
+
+            $passwordExpiresInString = ($daysRemaining > 0)
+                                    ? ('in ' . $daysRemaining . ' day' . (($daysRemaining > 1) ? 's' : ''))
+                                    : 'within 24 hours';
+        } else {
+            $passwordExpiresInString = '';
+        }
+                
         if(Helpers::isTwentyOne()) {
             $templateFile = 'templates/tpl/clientareatwentyone';
         } else {
@@ -401,12 +402,15 @@ SCRIPT;
             'templatefile' => $templateFile,
             'vars' => array(
                 'serviceId'         => $serviceId,
-                'initialPassword'   => $initialPassword["password"],
-                'deviceDetails'     => $deviceDetails,
+                'primaryIp'         => $deviceDetails["primaryIp"],
+                'username'          => $initialCreds['user'],
+                'initialPassword'   => $initialCreds["password"],
                 'orderStatus'       => ucwords($orderStatus),
-                //'ipmiData'          => $ipmiData,
                 'userIp'            => $userIp,
-                //'domainList'        => $domainList,
+                'deviceStatus'      => $deviceDetails['status'],
+                'devicePowerStatus' => $devicePowerStatus,
+                'ips'               => $ips,
+                'passwordExpiresInString' => $passwordExpiresInString
             ),
         );
     }
@@ -422,10 +426,16 @@ SCRIPT;
         $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
         
         if($assignedDeviceId === false) {
-            throw new \Exception("Device is not assigned");
+            return 'Device has not yet finished provisioning.';
         }
-        
-        Api::bootDevice($assignedDeviceId);
+
+        try {
+            Api::bootDevice($assignedDeviceId);
+        } catch (Exception $e) {
+            return $e;
+        }
+
+        return 'success';
     }
     
     static public function reboot($params) {
@@ -439,10 +449,16 @@ SCRIPT;
         $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
         
         if($assignedDeviceId === false) {
-            throw new \Exception("Device is not assigned");
+            return 'Device has not yet finished provisioning.';
         }
-        
-        Api::rebootDevice($assignedDeviceId);
+
+        try {
+            Api::rebootDevice($assignedDeviceId);
+        } catch (Exception $e) {
+            return $e;
+        }
+
+        return 'success';
         
     }
     
@@ -457,10 +473,16 @@ SCRIPT;
         $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
         
         if($assignedDeviceId === false) {
-            throw new \Exception("Device is not assigned");
+            return 'Device has not yet finished provisioning.';
         }
-        
-        Api::shutdownDevice($assignedDeviceId);
+
+        try {
+            Api::shutdownDevice($assignedDeviceId);
+        } catch (Exception $e) {
+            return $e;
+        }
+
+        return 'success';
     }
     
     static public function reload($params) {
@@ -474,7 +496,7 @@ SCRIPT;
         $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
         
         if($assignedDeviceId === false) {
-            throw new \Exception("Device is not assigned");
+            return 'Device has not yet finished provisioning.';
         }
         
         if(isset($params["configoptions"]["Operating System"])) {
@@ -496,7 +518,13 @@ SCRIPT;
                 break;
             }
         }
-        
-        Api::reloadDevice($assignedDeviceId, $osId);
+
+        try {
+            Api::reloadDevice($assignedDeviceId, $osId);
+        } catch (Exception $e) {
+            return $e;
+        }
+
+        return 'success';
     }
 }

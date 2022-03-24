@@ -321,18 +321,18 @@ class Api {
         
         return $response;
     }
-    
-    static public function getInitialPasswordLink($deviceId) {
         
-        $resource = "/device/$deviceId/initial-password";
+    static public function getIpAssigment($deviceId) {
+        
+        $resource = "/device/$deviceId/ip_assignment";
         $response = self::sendRequest($resource);
         
         return $response;
     }
-    
-    static public function getIpAssigment($deviceId) {
+
+    static public function getIpAssigments($deviceId) {
         
-        $resource = "/device/$deviceId/ip_assignment";
+        $resource = "/device/$deviceId/ips";
         $response = self::sendRequest($resource);
         
         return $response;
@@ -391,6 +391,15 @@ class Api {
         );
         
         $response   = self::sendRequest($resource, "POST", $postFields, true);
+        
+        return $response;
+    }
+
+    static public function getDevicePowerStatus($deviceId) {
+        
+        $resource   = "/device/$deviceId/power";
+        
+        $response   = self::sendRequest($resource, "GET");
         
         return $response;
     }

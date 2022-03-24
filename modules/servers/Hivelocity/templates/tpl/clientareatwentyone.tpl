@@ -3,13 +3,19 @@
     <ul class="nav nav-tabs responsive-tabs-sm">
         <li class="active nav-item"><a data-toggle="tab" class="nav-link active" href="#tabDetails">Details</a></li>
         {if !$orderStatus}
+            <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpAssignments">IP Assignments</a></li>
             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabBandwidth">Bandwidth</a></li>
             <li style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpmi">IPMI</a></li>
             <li style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDns">DNS</a></li>
         {/if}
     </ul>
-    <div class="tab-content" style="border-style: solid; border-color: #ddd; padding:5px; padding-top: 20px; border-width: 1px; border-top-style: none;" >
+    <div class="tab-content" style="border-style: solid; border-color: #ddd; padding:15px; padding-top: 20px; padding-bottom: 20px; border-width: 1px; border-top-style: none;" >
         <div id="tabDetails" class="tab-pane fade in active show">
+            {if !$orderStatus && $initialPassword}
+                <div class="alert alert-info" role="alert" style="margin-bottom:20px;">
+                    We've set a temporary password for your device. It should be changed immediately. Password will expire {$passwordExpiresInString}.
+                </div>
+            {/if}
             <div class="container" style="width:auto">
                 {if $orderStatus}
                     <div class="row">
@@ -26,7 +32,7 @@
                             <strong>Device Status</strong>
                         </div>
                         <div class="col-sm-7 text-left">
-                            {$deviceDetails.status}
+                            {$deviceStatus}
                         </div>
                     </div>
                     <div class="row">
@@ -34,27 +40,33 @@
                             <strong>Power Status</strong>
                         </div>
                         <div class="col-sm-7 text-left">
-                            {$deviceDetails.powerStatus}
+                            {$devicePowerStatus}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-5 text-right">
+                            <strong>Default ssh user</strong>
+                        </div>
+                        <div class="col-sm-7 text-left">
+                            {$username}
                         </div>
                     </div>
                     {if $initialPassword}
-                    <div class="row">
-                        <div class="col-sm-5 text-right">
-                            <strong>Initial Root Password</strong>
+                        <div class="row">
+                            <div class="col-sm-5 text-right">
+                                <strong>Default password (expires {$passwordExpiresInString}) </strong>
+                            </div>
+                            <div class="col-sm-7 text-left">
+                                {$initialPassword}
+                            </div>
                         </div>
-                        <div class="col-sm-7 text-left">
-                            {$initialPassword}
-                        </div>
-                    </div>
                     {/if}
                     <div class="row">
                         <div class="col-sm-5 text-right">
-                            <strong>IP Addresses</strong>
+                            <strong>Primary IP Address</strong>
                         </div>
                         <div class="col-sm-7 text-left">
-                            {foreach from=$deviceDetails.ipAddresses item=ipAddress}
-                                {$ipAddress}</br>
-                            {/foreach}
+                            {$primaryIp}
                         </div>
                     </div>
                 {/if}
@@ -62,6 +74,65 @@
         </div>
         
         {if !$orderStatus}
+            <div id="tabIpAssignments" class="tab-pane fade">
+                <div class="container" style="width:auto">
+                    {foreach from=$ips key=key item=ipAssignment}
+                        <div {if $key neq (count($ips) - 1)} style="margin-bottom:20px" {/if}>
+                            <div class="row">
+                                <div class="col-sm-5 text-right">
+                                    <strong>Assignment</strong>
+                                </div>
+                                <div class="col-sm-7 text-left">
+                                    {$ipAssignment.description}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-5 text-right">
+                                    <strong>IP Range (CIDR)</strong>
+                                </div>
+                                <div class="col-sm-7 text-left">
+                                    {$ipAssignment.subnet}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-5 text-right">
+                                    <strong>Netmask</strong>
+                                </div>
+                                <div class="col-sm-7 text-left">
+                                    {$ipAssignment.netmask}
+                                </div>
+                            </div>
+
+                            {if empty($ipAssignment.usableIps)}
+                                </div>
+                                {continue}
+                            {/if}
+
+                            <div class="row">
+                                <div class="col-sm-5 text-right">
+                                    <strong>Gateway IP</strong>
+                                </div>
+                                <div class="col-sm-7 text-left">
+                                    {$ipAssignment.usableIps[0]}
+                                </div>
+                            </div>
+
+                            {foreach from=$ipAssignment.usableIps key=key item=usableIp}
+                                {if $key eq 0} {continue} {/if}
+
+                                <div class="row">
+                                    <div class="col-sm-5 text-right">
+                                        <strong>Usable IP</strong>
+                                    </div>
+                                    <div class="col-sm-7 text-left">
+                                        {$usableIp}
+                                    </div>
+                                </div>
+                            {/foreach}
+                        </div>
+                    {/foreach}
+                </div>
+            </div>
         
             <div id="tabBandwidth" class="tab-pane fade">
                 <div class="container" style="width:auto">
