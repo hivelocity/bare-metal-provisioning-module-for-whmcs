@@ -210,87 +210,93 @@ SCRIPT;
         $deploymentId       = Helpers::getHivelocityDeploymentCorrelation($serviceId);
         $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
         
-        
-        if($deploymentId || $assignedDeviceId) {
-            
-            throw new \Exception("Deployment in progress or device exist.");
+        if($assignedDeviceId) {
+            throw new \Exception("Device already exist.");
         }
         
         //----------------------------------------------------------------------
+
+        if (!$deploymentId) {
+            $deploymentName     = "S".$serviceId."T".time();
         
-        $deploymentName     = "S".$serviceId."T".time();
-        
-        $response           = Api::createDeployment($deploymentName);
-        $deploymentId       = $response["deploymentId"];
-        
-        $remoteProductId    = $params["configoption1"];
-        
-        if(isset($params["configoptions"]["Location"])) {
-            $locationId     = $params["configoptions"]["Location"];
-        } else {
-            $locationId     = $params["configoption4"];
-        }
-        
-        if(isset($params["configoptions"]["Operating System"])) {
-            $osId           = $params["configoptions"]["Operating System"];
-        } else {
-            $osId           = $params["configoption5"];
-        }
-        
-        $expectedOptions = array(
-            "Control Panel",
-            "Managed Services",
-            "LiteSpeed",
-            "WHMCS",
-            "Bandwidth",
-            "Load Balancing",
-            "DDOS",
-            "Daily Backup & Rapid Restore",
-            "Cloud Storage",
-            "Data Migration"
-        );
-        
-        $options = array();
-        
-        if(isset($params["configoptions"]["Operating System"])) {               //config options exist, use config options
+            $response           = Api::createDeployment($deploymentName);
+            $deploymentId       = $response["deploymentId"];
+    
+            // First, save correlation between serviceId and deploymentId
+            Helpers::saveHivelocityDeploymentCorrelation($serviceId, $deploymentId);
             
-            foreach($expectedOptions as $optionName) {
+            $remoteProductId    = $params["configoption1"];
+            
+            if(isset($params["configoptions"]["Location"])) {
+                $locationId     = $params["configoptions"]["Location"];
+            } else {
+                $locationId     = $params["configoption4"];
+            }
+            
+            if(isset($params["configoptions"]["Operating System"])) {
+                $osId           = $params["configoptions"]["Operating System"];
+            } else {
+                $osId           = $params["configoption5"];
+            }
+            
+            $expectedOptions = array(
+                "Control Panel",
+                "Managed Services",
+                "LiteSpeed",
+                "WHMCS",
+                "Bandwidth",
+                "Load Balancing",
+                "DDOS",
+                "Daily Backup & Rapid Restore",
+                "Cloud Storage",
+                "Data Migration"
+            );
+            
+            $options = array();
+            
+            if(isset($params["configoptions"]["Operating System"])) {               //config options exist, use config options
                 
-                if(isset($params["configoptions"][$optionName]) && !empty($params["configoptions"][$optionName])) {
+                foreach($expectedOptions as $optionName) {
+                    
+                    if(isset($params["configoptions"][$optionName]) && !empty($params["configoptions"][$optionName])) {
+                    
+                        $options[]  = $params["configoptions"][$optionName];
+                    }
+                }
                 
-                    $options[]  = $params["configoptions"][$optionName];
+            } else {                                                                //use admin area options
+                
+                for($i=6; $i<20; $i++) {
+                    
+                    if(isset($params["configoption".$i]) && !empty($params["configoption".$i])) { 
+                    
+                        $options[]  = $params["configoption".$i];
+                    }
                 }
             }
             
-        } else {                                                                //use admin area options
+            $hostName           = $params["domain"];
             
-            for($i=6; $i<20; $i++) {
+            $serviceModel       = $params["model"];
+            $serviceAttributes  = $serviceModel->getAttributes();
+            $billingPeriod      = strtolower($serviceAttributes["billingcycle"]);
+            
+            $response           = Api::configureDeployment($deploymentId, $remoteProductId, $locationId, $osId, $options, $hostName, $billingPeriod);
+            
+            $billingInfoId      = $params["configoption3"];
+    
+            $savedDeploymentId = Helpers::getHivelocityDeploymentCorrelation($serviceId);
+            
+            if($savedDeploymentId == $deploymentId) {            
+                $response           = Api::executeDeployment($deploymentId, $billingInfoId);
+        
+                $deploymentDetails  = Api::getDeploymentDetails($deploymentId);
+                $hivelocityOrderId  = $deploymentDetails["orderNumber"];
+    
                 
-                if(isset($params["configoption".$i]) && !empty($params["configoption".$i])) { 
-                
-                    $options[]  = $params["configoption".$i];
-                }
+                Helpers::saveHivelocityOrderCorrelation($serviceId, $hivelocityOrderId);
             }
-        }
-        
-        $hostName           = $params["domain"];
-        
-        $serviceModel       = $params["model"];
-        $serviceAttributes  = $serviceModel->getAttributes();
-        $billingPeriod      = strtolower($serviceAttributes["billingcycle"]);
-        
-        $response           = Api::configureDeployment($deploymentId, $remoteProductId, $locationId, $osId, $options, $hostName, $billingPeriod);
-        
-        $billingInfoId      = $params["configoption3"];
-        
-        $response           = Api::executeDeployment($deploymentId, $billingInfoId);
-        
-        Helpers::saveHivelocityDeploymentCorrelation($serviceId, $deploymentId);
-        
-        $deploymentDetails  = Api::getDeploymentDetails($deploymentId);
-        $hivelocityOrderId  = $deploymentDetails["orderNumber"];
-        
-        Helpers::saveHivelocityOrderCorrelation($serviceId, $hivelocityOrderId);
+        }        
     }
     
     static public function terminate($params) {
