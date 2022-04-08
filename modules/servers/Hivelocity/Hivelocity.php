@@ -112,12 +112,12 @@ function Hivelocity_ClientAreaCustomButtonArray($params) {
     
     \Hivelocity\classes\Api::setApiDetails($apiUrl, $apiKey);
     
-    $serviceId          = $params["serviceid"];
-    $assignedDeviceId   = \Hivelocity\classes\Helpers::getAssignedDeviceId($serviceId);
-
-    if($assignedDeviceId === false) return $deviceActions;
-
     try {
+        $serviceId          = $params["serviceid"];
+        $assignedDeviceId   = \Hivelocity\classes\Helpers::getAssignedDeviceId($serviceId);
+
+        if($assignedDeviceId === false) return $deviceActions;
+
         $devicePowerStatus = \Hivelocity\classes\Api::getDevicePowerStatus($assignedDeviceId);
 
         if (is_null($devicePowerStatus)) return $deviceActions;
