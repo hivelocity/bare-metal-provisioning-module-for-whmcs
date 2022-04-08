@@ -206,25 +206,26 @@ SCRIPT;
         $serviceId          = $params["serviceid"];  
            
         //check if deployment exist---------------------------------------------
-        
+
         $deploymentId       = Helpers::getHivelocityDeploymentCorrelation($serviceId);
         $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
         
         if($assignedDeviceId) {
             throw new \Exception("Device already exist.");
         }
-        
+
+        if ($deploymentId) return;
         //----------------------------------------------------------------------
 
-        if (!$deploymentId) {
-            $deploymentName     = "S".$serviceId."T".time();
-        
-            $response           = Api::createDeployment($deploymentName);
-            $deploymentId       = $response["deploymentId"];
+        $deploymentName     = "S".$serviceId."T".time();
     
-            // First, save correlation between serviceId and deploymentId
-            Helpers::saveHivelocityDeploymentCorrelation($serviceId, $deploymentId);
-            
+        $response           = Api::createDeployment($deploymentName);
+        $deploymentId       = $response["deploymentId"];
+
+        // First, save correlation between serviceId and deploymentId
+        Helpers::saveHivelocityDeploymentCorrelation($serviceId, $deploymentId);
+
+        try {
             $remoteProductId    = $params["configoption1"];
             
             if(isset($params["configoptions"]["Location"])) {
@@ -295,7 +296,15 @@ SCRIPT;
     
                 
                 Helpers::saveHivelocityOrderCorrelation($serviceId, $hivelocityOrderId);
+
+                return 'success';
             }
+        } catch(\Exception $e) {
+            if($deploymentId) {
+                Helpers::deleteHivelocityDeploymentCorrelationByDeploymentId($deploymentId);
+            }
+
+            throw $e;
         }        
     }
     

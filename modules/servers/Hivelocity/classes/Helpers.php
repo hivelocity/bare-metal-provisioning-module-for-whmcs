@@ -159,6 +159,13 @@ class Helpers {
         }
     }
     
+    static public function deleteHivelocityDeploymentCorrelationByDeploymentId($hivelocityDeploymentId) {
+        Capsule::table('HivelocityDeploymentCorrelation')
+        ->where('hivelocityDeploymentId', '=', $hivelocityDeploymentId)
+        ->delete();
+    }
+
+
     static public function saveHivelocityOrderCorrelation($whmcsServiceId, $hivelocityOrderId) {
         
         $pdo = Capsule::connection()->getPdo();
