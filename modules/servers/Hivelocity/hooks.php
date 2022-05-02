@@ -22,6 +22,15 @@ add_hook('ClientAreaPage', 1, function($params) {
     } catch (Exception $e) {}
 });
 
+add_hook('ClientAreaPageCancellation', 1, function($params) {
+    
+    require_once 'Autoloader.php';
+    
+    try {
+        return \Hivelocity\classes\Hooks::cancelRequestPage($params);
+    } catch (Exception $e) {}
+});
+
 add_hook('ClientAreaFooterOutput', 1, function($params) {
     
     require_once 'Autoloader.php';

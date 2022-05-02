@@ -233,6 +233,70 @@ class Hooks {
         }
         die;
     }
+
+    static function cancelRequestPage($params) {
+        
+        if(isset($_POST["hivelocityAction"])) {
+            return;
+        }
+
+        if (!isset($_GET["id"])) {
+            return;
+        }
+
+        $serviceId          = $_GET["id"];
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $hivelocityOrderId  = Helpers::getHivelocityOrderCorrelation($serviceId);
+        
+        if($assignedDeviceId === false && $hivelocityOrderId !== false) {
+            
+            try {
+                $orderDetails       = Api::getOrderDetails($hivelocityOrderId);
+                $orderStatus        = $orderDetails["status"];
+            } catch (\Exception $e) {
+                $orderStatus        = "unknown";
+            }
+            
+            if($orderStatus == "complete") {
+                
+                $remoteServiceList = Api::getServiceList($hivelocityOrderId);
+                
+                foreach($remoteServiceList as $remoteService) {
+                    
+                    if($remoteService["orderId"] == $hivelocityOrderId) {
+                        
+                        $remoteServiceId    = $remoteService["serviceId"];
+                        
+                        Helpers::saveHivelocityServiceCorrelation($serviceId, $remoteServiceId);
+                        
+                        $deviceId           = $remoteService["serviceDevices"][0]["id"];
+                        Helpers::assignDevice($serviceId, $deviceId);
+                        $deviceDetails      = Api::getDeviceDetails($deviceId);
+                        $initialCreds    = Api::getInitialPassword($deviceId);
+                        $orderStatus        = false;
+                        
+                        break;
+                    }
+                }
+            }
+        } else {
+            $deviceDetails      = Api::getDeviceDetails($assignedDeviceId);
+        }
+
+        return array(
+            'orderStatus'       => ucwords($orderStatus),
+            'deviceStatus'      => $deviceDetails['status'],
+        );
+    }
     
     static function addProductCustomFields($params) {
         
