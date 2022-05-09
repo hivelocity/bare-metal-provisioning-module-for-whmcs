@@ -35,8 +35,9 @@ function Hivelocity_ConfigOptions($params) {
 }
 
 function Hivelocity_CreateAccount($params) {
+    $returnMsg = '';
     try {
-        \Hivelocity\classes\Addon::create($params);
+        $returnMsg = \Hivelocity\classes\Addon::create($params);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -49,7 +50,11 @@ function Hivelocity_CreateAccount($params) {
         return $e->getMessage();
     }
 
-    return 'success';
+    if ($returnMsg == '') {
+        return 'success';
+    } else {
+        return $returnMsg;
+    }
 }
 
 function Hivelocity_SuspendAccount($params) {
