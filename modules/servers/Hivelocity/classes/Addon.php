@@ -197,11 +197,28 @@ SCRIPT;
     }
     
     static public function create($params) {
-        
+
         $apiUrl             = $params["serverhostname"];
         $apiKey             = $params["serveraccesshash"];
         
         Api::setApiDetails($apiUrl, $apiKey);
+
+        // Check if billing info is valid BEGIN
+        $billingInfoId      = $params["configoption3"];
+        $billingOptionValid = false;
+        $billingInfoList    = Api::getBillingInfoList();
+        
+        foreach($billingInfoList as $billingInfo) {
+            if ($billingInfo["id"] == $billingInfoId) {
+                $billingOptionValid = true;
+                break;
+            }
+        }
+
+        if ($billingOptionValid == false) {
+            return 'Billing info is not valid. Please go to System Settings -> Products/Services, edit product, go to Module Settings and resave configuration.';
+        }
+        // Check if billing info is valid END
         
         $serviceId          = $params["serviceid"];  
            
@@ -223,7 +240,7 @@ SCRIPT;
         $deploymentId       = $response["deploymentId"];
 
         // First, save correlation between serviceId and deploymentId
-        Helpers::saveHivelocityDeploymentCorrelation($serviceId, $deploymentId);
+        Helpers::saveHivelocityDeploymentCorrelation($serviceId, $deploymentId);       
 
         try {
             $remoteProductId    = $params["configoption1"];
@@ -284,8 +301,7 @@ SCRIPT;
             
             $response           = Api::configureDeployment($deploymentId, $remoteProductId, $locationId, $osId, $options, $hostName, $billingPeriod);
             
-            $billingInfoId      = $params["configoption3"];
-    
+            // Final check and execute deployment
             $savedDeploymentId = Helpers::getHivelocityDeploymentCorrelation($serviceId);
             
             if($savedDeploymentId == $deploymentId) {            
