@@ -138,7 +138,7 @@
                 <div class="container" style="width:auto">
                     <div class="row" style="margin-bottom:5px">
                         <div class="col">
-                            <table style="margin: auto;">
+                            <table class="hivelocityFormTable" style="margin: auto;">
                                 <tr>
                                     <td style="width: 120px; text-align: right; padding-right: 5px;">
                                         <strong>Period</strong>
@@ -158,7 +158,7 @@
                         
                     <div id="customPeriodDiv" class="row" style="margin-bottom:5px; display:none;">
                         <div class="col">
-                            <table style="margin: auto;">
+                            <table  class="hivelocityFormTable" style="margin: auto;">
                                 <tr>
                                     <td style="width: 120px; text-align: right; padding-right: 5px;">
                                         <strong>Custom Period</strong>
@@ -172,7 +172,8 @@
                     </div>
                 </div>
                 <img src="admin/images/loading.gif" id="graphLoader" class="" style="display: none;">
-                <img id="bandwidthGraphImage" src="modules/servers/Hivelocity/graph.php?hivelocityServiceId={$serviceId}" alt="Graph" style="max-width:100%">
+                <div id="tabBandwidthGraphs">
+                </div>  
             </div>
             <div id="tabIpmi" class="tab-pane fade">
                 <div class="container" style="width:auto">
