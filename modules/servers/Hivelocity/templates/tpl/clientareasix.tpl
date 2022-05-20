@@ -172,7 +172,8 @@
                     </div>
                 </div>
                 <img src="admin/images/loading.gif" id="graphLoader" class="" style="display: none;">
-                <img id="bandwidthGraphImage" src="modules/servers/Hivelocity/graph.php?hivelocityServiceId={$serviceId}" alt="Graph" style="max-width:100%">
+                <div id="tabBandwidthGraphs">
+                </div>
             </div>
             <div id="tabIpmi" class="tab-pane fade" style="display: none">
                 <div class="container" style="width:auto">

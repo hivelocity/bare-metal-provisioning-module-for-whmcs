@@ -45,13 +45,7 @@ class Graph {
 
         $response = Api::getGraph($assignedDevice, $period, $startTimestamp, $endTimestamp);
 
-        $graph = base64_decode($response[0]["graphImage"]);
-
-        header("Content-type: image/png");
-        header('Expires: 0');
-        header('Content-Length: ' . filesize($graph));
-
-        echo $graph;
+        echo json_encode($response);
 
         exit;
     }

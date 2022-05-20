@@ -1,6 +1,5 @@
 $(document).ready(function() {
-    
-    addGraphPeriodControll();
+
     addEventAddDomain();
     addEventRemoveDomain();
     addEventAllowIp();
@@ -8,6 +7,10 @@ $(document).ready(function() {
     addEventVpnHelp();
     addEventShowIpmiModal();
     addEventShowDnsModal();
+
+    // Bandwidth graphs
+    initializeBandwidthGraphs();
+    setBandwidthGraphPeriodControl();
 });
 
 
@@ -299,48 +302,6 @@ function addEventShowDnsModal() {
     })
 }
 
-function addGraphPeriodControll() {
-   
-    $('#customPeriodInput').daterangepicker();
-   
-    $('#periodSelect').change(function() {
-       
-        var selectedPeriod  = $('#periodSelect').val();
-        var customPeriod    = $('#customPeriodInput').val();
-        
-        if(selectedPeriod == "custom") {
-            $("#customPeriodDiv").show();
-        } else {
-            $("#customPeriodDiv").hide();
-            reloadGraph(hivelocityServiceId, selectedPeriod, customPeriod);
-        }
-    });
-    
-    $('#customPeriodInput').change(function() {
-       
-        var selectedPeriod  = $('#periodSelect').val();
-        var customPeriod    = $('#customPeriodInput').val();
-        
-        reloadGraph(hivelocityServiceId, selectedPeriod, customPeriod);
-    });
-}
-
-function reloadGraph(hivelocityServiceId, selectedPeriod, customPeriod) {
-    
-    $('#bandwidthGraphImage').hide();
-    $('#graphLoader').show();
-
-
-    var source = "modules/servers/Hivelocity/graph.php"
-
-    $("#bandwidthGraphImage").attr("src", source+"?hivelocityServiceId="+hivelocityServiceId+"&hivelocityPeriod="+selectedPeriod+"&hivelocityCustomPeriod="+customPeriod+"&random="+jQuery.now());
-
-    $("#bandwidthGraphImage").on('load', function() {
-        $('#bandwidthGraphImage').show();
-        $('#graphLoader').hide();
-    });
-}
-
 function getRecordRow(recordData) {
     
     var html =  '   <tr id="' + recordData.id + '">';
@@ -522,4 +483,72 @@ function hideErrors() {
     $("#hivelocityMainErrorBox").hide();
     $("#hivelocityIpmiModalErrorBox").hide();
     $("#hivelocityDnsModalErrorBox").hide();
+}
+
+// HTML template used to render single graph
+const bandwidthGraphTemplate = function(graphId, image, lastGraph) {
+    return `
+        <div id="graph-${graphId}" class="container" style="width:auto; margin-bottom: ${lastGraph ? '0px' : '30px'};">
+            <img id="bandwidthGraphImage-${graphId}" src="data:image/png;base64,${image}" alt="Graph" style="max-width:100%">
+        </div>            
+    `;
+}
+
+// Parse data and show all graphs
+function renderBandwidthGraphs(graphs) {
+    if (graphs.length === 0) return;
+
+    graphs.forEach((graph, i) => {
+        $('#tabBandwidthGraphs').append(
+          bandwidthGraphTemplate(graph.interface, graph.graphImage, i === graphs.length - 1)
+      );
+  });
+}
+
+function setBandwidthGraphPeriodControl() {
+   
+    $('#customPeriodInput').daterangepicker();
+   
+    $('#periodSelect').change(function() {
+       
+        var selectedPeriod  = $('#periodSelect').val();
+        var customPeriod    = $('#customPeriodInput').val();
+        
+        if(selectedPeriod == "custom") {
+            $("#customPeriodDiv").show();
+        } else {
+            $("#customPeriodDiv").hide();
+            reloadBandwidthGraphs(hivelocityServiceId, selectedPeriod, customPeriod);
+        }
+    });
+    
+    $('#customPeriodInput').change(function() {
+       
+        var selectedPeriod  = $('#periodSelect').val();
+        var customPeriod    = $('#customPeriodInput').val();
+        
+        reloadBandwidthGraphs(hivelocityServiceId, selectedPeriod, customPeriod);
+    });
+}
+
+function reloadBandwidthGraphs(hivelocityServiceId, selectedPeriod, customPeriod) {
+    
+    $('#tabBandwidthGraphs').empty();
+    $('#graphLoader').show();
+
+    $.get( "modules/servers/Hivelocity/graph.php?hivelocityServiceId="+hivelocityServiceId+"&hivelocityPeriod=" + selectedPeriod + "&hivelocityCustomPeriod=" + customPeriod + "&random="+jQuery.now(), function(data) {
+        const graphs =  $.parseJSON(data);
+
+        $('#graphLoader').hide();
+        renderBandwidthGraphs(graphs);
+    });
+}
+
+// On initial load show all graphs
+function initializeBandwidthGraphs() {
+    $.get( "modules/servers/Hivelocity/graph.php?hivelocityServiceId=" + hivelocityServiceId + "&hivelocityPeriod=day&random=" + jQuery.now(), function(data) {
+        const graphs =  $.parseJSON(data);
+
+        renderBandwidthGraphs(graphs);
+    });
 }

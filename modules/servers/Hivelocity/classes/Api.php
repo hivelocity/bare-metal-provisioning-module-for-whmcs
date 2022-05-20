@@ -354,15 +354,19 @@ class Api {
     }
     
     static public function getGraph($deviceId, $period = "day", $start = null, $end = null) {
+        $queryParams = "period=$period&interface=all";
+
+        if ($start !== null) {
+            $queryParams .= "&start=$start";
+        }
+
+        if ($end !== null) {
+            $queryParams .= "&end=$end";
+        }
         
-        $resource   = "/bandwidth/device/$deviceId/image";
+        $resource   = "/bandwidth/device/$deviceId/image?$queryParams";
         
-        $postFields = array(
-            "period"    => $period,
-            "start"     => $start,
-            "end"       => $end,
-            "interface" => "eth0",
-        );
+        $postFields = array();
         
         $response   = self::sendRequest($resource, "POST", $postFields, true);
         
