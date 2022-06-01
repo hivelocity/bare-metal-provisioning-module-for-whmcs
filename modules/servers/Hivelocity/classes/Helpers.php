@@ -165,7 +165,6 @@ class Helpers {
         ->delete();
     }
 
-
     static public function saveHivelocityOrderCorrelation($whmcsServiceId, $hivelocityOrderId) {
         
         $pdo = Capsule::connection()->getPdo();
@@ -585,7 +584,7 @@ class Helpers {
         }
         return $row["id"];
     }
-    
+
     static public function getConfigOptionsLinkId($productId, $groupId) {
         
         $productId  = intval($productId);
@@ -617,6 +616,19 @@ class Helpers {
         $statement->execute([$groupId, $productId]);
         $pdo->commit();
     }
+
+    static public function getConfigOptionList($configOptionGroupId) {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblproductconfigoptions WHERE gid = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionGroupId]);
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
     
     static public function getConfigOptionId($groupId, $name) {
         
@@ -647,6 +659,30 @@ class Helpers {
         $query      = "INSERT INTO tblproductconfigoptions (gid, optionname, optiontype) VALUES (?, ?, 1)";
         $statement  = $pdo->prepare($query);
         $statement->execute([$groupId, $name]);
+        $pdo->commit();
+    }
+
+    static public function hideConfigOption($configOptionId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptions SET hidden = 1 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionId]);
+        $pdo->commit();
+    }
+    
+    static public function unHideConfigOption($configOptionId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptions SET hidden = 0 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionId]);
         $pdo->commit();
     }
     
@@ -711,6 +747,30 @@ class Helpers {
         $statement->execute([$optionId]);
         $pdo->commit();
     }
+
+    static public function hideConfigOptionSub($configOptionSubId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptionssub SET hidden = 1 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionSubId]);
+        $pdo->commit();
+    }
+    
+    static public function unHideConfigOptionSub($configOptionSubId) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproductconfigoptionssub SET hidden = 0 WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$configOptionSubId]);
+        $pdo->commit();
+    }
     
     static public function addConfigOptionPrice($optionSubId, $price, $currencyId) {
         
@@ -723,6 +783,39 @@ class Helpers {
         $statement  = $pdo->prepare($query);
         $statement->execute([$currencyId, $optionSubId, $price]);
         $pdo->commit();
+    }
+
+    static public function setConfigOptionPrice($optionSubId, $price, $currencyId) {
+        
+        $optionSubId    = intval($optionSubId);
+        $currencyId     = intval($currencyId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT id FROM tblpricing WHERE type = 'configoptions' AND relid = ? AND currency = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$optionSubId, $currencyId]);
+        $row        = $statement->fetch();
+        $pdo->commit();
+        
+        if(isset($row["id"]) && !empty($row["id"])) {
+            
+            $priceId    = $row["id"];
+            $pdo->beginTransaction();
+            $query      = "UPDATE tblpricing SET monthly = ? WHERE id = ?";
+            $statement  = $pdo->prepare($query);
+            $statement->execute([$price, $priceId]);
+            $pdo->commit();
+            
+        } else {
+            
+            $pdo        = Capsule::connection()->getPdo();
+            $pdo->beginTransaction();
+            $query      = "INSERT INTO tblpricing (type, currency, relid, msetupfee, monthly) VALUES ('configoptions', ?, ?, 0, ?)";
+            $statement  = $pdo->prepare($query);
+            $statement->execute([$currencyId, $optionSubId, $price]);
+            $pdo->commit();
+        }
     }
     
     static public function getFirstServiceId($userId) {
