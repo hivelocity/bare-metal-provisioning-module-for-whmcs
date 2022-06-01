@@ -18,40 +18,50 @@ class Actions {
         
         $configOptionsGroupId   = Helpers::getConfigOptionsGroupId($productId);
         $newGroup               = false;
-        
+
         if($configOptionsGroupId == false) {
             $configOptionsGroupId   = Helpers::createConfigOptionsGroup($productId);
             $newGroup               = true;
         }
-        
+
         $configOptionsLinkId = Helpers::getConfigOptionsLinkId($productId, $configOptionsGroupId);
         if($configOptionsLinkId == false) {
             Helpers::createConfigOptionsLink($productId, $configOptionsGroupId);
         }
-        
+
         $currencyId = Helpers::getCurrencyId("USD");
-        
+
         if($currencyId == false) {
             throw new \Exception("Currency 'USD' Not Configured");
         }
         
-//------------------------------------------------------------------------------
+        // Collect all processed options: location, OS, other options like bandwidth etc.
+        $processedOptions       = array();    
+        //------------------------------------------------------------------------------
         
+
+        // Handle Location option
+        // If location exist, update pricing
+        // If it doesn't exist, add and create pricing
         $locationConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Location");
         if($locationConfigOptionId == false) {
             Helpers::createConfigOption($configOptionsGroupId, "Location");
             $locationConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Location");
         }
-        
-        Helpers::clearConfigOptionSub($locationConfigOptionId);
-        
+
+        $processedSubOptions    = array();
+
         foreach($remoteProductDetails as $location => $details) {
             
             $name               = $location."|".Helpers::getLocationName($location);
-            
-            Helpers::createConfigOptionSub($locationConfigOptionId, $name);
-            
             $configOptionSubId  = Helpers::getConfigOptionSubId($locationConfigOptionId, $name);
+            
+            if($configOptionSubId == false) {
+                
+                Helpers::createConfigOptionSub($locationConfigOptionId, $name);
+                $configOptionSubId  = Helpers::getConfigOptionSubId($locationConfigOptionId, $name);
+            }
+            
             $price              = floatval($details[0]["monthly_location_premium"]);
             
             $usdRate            = Helpers::getCurrencyRate("USD");
@@ -62,27 +72,55 @@ class Actions {
                 $currencyId     = $currency["id"];
                 $currencyRate   = $currency["rate"];
                 $priceConverted = $basePrice * $currencyRate;
-                Helpers::addConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+                Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+            }
+            
+            $processedSubOptions[] = $configOptionSubId;
+        }
+
+        $localConfigOptionSubList   = Helpers::getConfigOptionSubList($locationConfigOptionId);
+            
+        foreach($localConfigOptionSubList as $localConfigOptionSubData) {
+
+            $localConfigOptionSubId     = $localConfigOptionSubData["id"];
+
+            if(in_array($localConfigOptionSubId, $processedSubOptions)) {
+
+                Helpers::unHideConfigOptionSub($localConfigOptionSubId);
+
+            } else {
+
+                Helpers::hideConfigOptionSub($localConfigOptionSubId);
             }
         }
+
+        // Add Location to processed options
+        $processedOptions[]         = $locationConfigOptionId;
+        //------------------------------------------------------------------------------
+
         
-//------------------------------------------------------------------------------
-        
+        // Handle Operating System option
+        // If OS exist, update pricing
+        // If it doesn't exist, add and create pricing
         $osConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Operating System");
         if($osConfigOptionId == false) {
             Helpers::createConfigOption($configOptionsGroupId, "Operating System");
             $osConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Operating System");
         }
          
-        Helpers::clearConfigOptionSub($osConfigOptionId);
-        
+        $processedSubOptions    = array();
+
         foreach($remoteProductOS as $os) {
             
             $name               = $os["name"]."|".$os["name"];
-            
-            Helpers::createConfigOptionSub($osConfigOptionId, $name);
-            
             $configOptionSubId  = Helpers::getConfigOptionSubId($osConfigOptionId, $name);
+            
+            if($configOptionSubId == false) {
+                
+                Helpers::createConfigOptionSub($osConfigOptionId, $name);
+                $configOptionSubId  = Helpers::getConfigOptionSubId($osConfigOptionId, $name);
+            }
+            
             $price              = floatval($os["monthlyPrice"]);
             
             $usdRate            = Helpers::getCurrencyRate("USD");
@@ -94,14 +132,38 @@ class Actions {
                 $currencyId     = $currency["id"];
                 $currencyRate   = $currency["rate"];
                 $priceConverted = $basePrice * $currencyRate;
-                Helpers::addConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+                Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+            }
+            
+            $processedSubOptions[] = $configOptionSubId;
+        }
+
+        $localConfigOptionSubList   = Helpers::getConfigOptionSubList($osConfigOptionId);
+            
+        foreach($localConfigOptionSubList as $localConfigOptionSubData) {
+
+            $localConfigOptionSubId     = $localConfigOptionSubData["id"];
+
+            if(in_array($localConfigOptionSubId, $processedSubOptions)) {
+
+                Helpers::unHideConfigOptionSub($localConfigOptionSubId);
+
+            } else {
+
+                Helpers::hideConfigOptionSub($localConfigOptionSubId);
             }
         }
+
+        // Add OS to processed options
+        $processedOptions[]         = $osConfigOptionId;
+        //------------------------------------------------------------------------------
         
-//------------------------------------------------------------------------------
-        
-        $remoteProductOptions = Helpers::filterProductOptions($remoteProductOptions);
-        
+
+        // Handle all other options
+        // If option exist, update pricing
+        // If it doesn't exist, add and create pricing
+        $remoteProductOptions   = Helpers::filterProductOptions($remoteProductOptions);
+
         foreach($remoteProductOptions as $optionName => $subOptions) {
             
             $configOptionId = Helpers::getConfigOptionId($configOptionsGroupId, $optionName);
@@ -111,15 +173,19 @@ class Actions {
                 $configOptionId = Helpers::getConfigOptionId($configOptionsGroupId, $optionName);
             }
             
-            Helpers::clearConfigOptionSub($configOptionId);
+            $processedSubOptions    = array();
             
             foreach($subOptions as $subOption) {
                 
                 $name               = $subOption["id"]."|".$subOption["name"];
-
-                Helpers::createConfigOptionSub($configOptionId, $name);
-
                 $configOptionSubId  = Helpers::getConfigOptionSubId($configOptionId, $name);
+                
+                if($configOptionSubId == false) {
+                    
+                    Helpers::createConfigOptionSub($configOptionId, $name);
+                    $configOptionSubId  = Helpers::getConfigOptionSubId($configOptionId, $name);
+                }
+                
                 $price              = floatval($subOption["monthlyPrice"]);
 
                 $usdRate            = Helpers::getCurrencyRate("USD");
@@ -128,16 +194,54 @@ class Actions {
                 $currencyList       = Helpers::getCurrencyList();
 
                 foreach($currencyList as $currency) {
-                    $currencyId     = $currency["id"];
-                    $currencyRate   = $currency["rate"];
-                    $priceConverted = $basePrice * $currencyRate;
-                    Helpers::addConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
+                    $currencyId         = $currency["id"];
+                    $currencyRate       = $currency["rate"];
+                    $priceConverted     = $basePrice * $currencyRate;
+                    Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
                 }
+                $processedSubOptions[]  = $configOptionSubId;
+            }
+            
+            $localConfigOptionSubList   = Helpers::getConfigOptionSubList($configOptionId);
+            
+            foreach($localConfigOptionSubList as $localConfigOptionSubData) {
+
+                $localConfigOptionSubId     = $localConfigOptionSubData["id"];
+
+                if(in_array($localConfigOptionSubId, $processedSubOptions)) {
+
+                    Helpers::unHideConfigOptionSub($localConfigOptionSubId);
+
+                } else {
+
+                    Helpers::hideConfigOptionSub($localConfigOptionSubId);
+                }
+            }
+            
+            // Add option to processed options
+            $processedOptions[]     = $configOptionId;
+        }
+        //------------------------------------------------------------------------------
+        
+
+        // Processing all options, hide/unhide
+        $localConfigOptionList   = Helpers::getConfigOptionList($configOptionsGroupId);
+            
+        foreach($localConfigOptionList as $localConfigOptionData) {
+
+            $localConfigOptionId     = $localConfigOptionData["id"];
+
+            if(in_array($localConfigOptionId, $processedOptions)) {
+
+                Helpers::unHideConfigOption($localConfigOptionId);
+
+            } else {
+
+                Helpers::hideConfigOption($localConfigOptionId);
             }
         }
 
-//------------------------------------------------------------------------------
-        
+        // Return new group if created
         $groupName          = Helpers::getConfigOptionsGroupName($configOptionsGroupId);
         $groupOptionHtml    = '<option selected value="'.$configOptionsGroupId.'">'.$groupName.'</option>';
         

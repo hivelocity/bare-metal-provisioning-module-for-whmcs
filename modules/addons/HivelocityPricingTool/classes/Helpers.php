@@ -628,7 +628,7 @@ class Helpers {
         }
         
         $processedOptions       = array();       
-//------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
         
         $locationConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Location");
         if($locationConfigOptionId == false) {
@@ -684,7 +684,7 @@ class Helpers {
         }
         
         $processedOptions[]         = $locationConfigOptionId;
-//------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
         
         $osConfigOptionId = Helpers::getConfigOptionId($configOptionsGroupId, "Operating System");
         if($osConfigOptionId == false) {
@@ -741,7 +741,7 @@ class Helpers {
         }
         
         $processedOptions[]         = $osConfigOptionId;
-//------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
         
         $remoteProductOptions   = Helpers::filterProductOptions($remoteProductOptions);
         
@@ -818,7 +818,7 @@ class Helpers {
                 Helpers::hideConfigOption($localConfigOptionId);
             }
         }
-//------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
         
         return;
     }
