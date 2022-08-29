@@ -316,7 +316,7 @@ class Helpers {
         
         $pdo        = Capsule::connection()->getPdo();
         $pdo->beginTransaction();
-        $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly) VALUES ('product', $productId, 'hivelocityDeviceId|Server ID', 'text', 'on')";
+        $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly) VALUES ('product', $productId, 'hivelocityDeviceId|Device ID', 'text', 'on')";
         $statement  = $pdo->prepare($query);
         $statement->execute();
         $pdo->commit();
