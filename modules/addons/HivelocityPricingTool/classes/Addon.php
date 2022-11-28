@@ -62,6 +62,11 @@ class Addon {
     }
     
     static public function output($params) {
+
+        if($_GET['action']=='generateproducts')
+        {
+            \HivelocityPricingTool\classes\Cron::synchronizeProducts();
+        }
         
         if(isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {
             $action = $_POST["hivelocityPricingToolAction"];
@@ -150,7 +155,10 @@ class Addon {
                 $remoteProductPriceConverted    = $remoteProductPrice * $currencyRate;
                 
                 $profit                         = $productPrice - $remoteProductPriceConverted;
-                $profitPercentage               = ($profit / $remoteProductPrice) * 100;
+                if($remoteProductPrice!=0)
+                {
+                    $profitPercentage           = ($profit / $remoteProductPrice) * 100;
+                }
                 
                 $smartyVarsProductList[$productId]["remotePrice"][$currencyId]  = number_format($remoteProductPriceConverted, 2);
                 $smartyVarsProductList[$productId]["localPrice"][$currencyId]   = number_format($productPrice, 2);
