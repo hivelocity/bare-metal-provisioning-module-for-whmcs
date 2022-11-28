@@ -12,53 +12,53 @@ class Helpers {
     static public function maintenanceDatabase() {
     
         $pdo = Capsule::connection()->getPdo();
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  " CREATE TABLE IF NOT EXISTS HivelocityProductPrices("
                 . "     hivelocityProductId int PRIMARY KEY NOT NULL, "
                 . "     hivelocityProductPrice DECIMAL(10,3) NOT NULL "
                 . " );";
         $statement = $pdo->prepare($query);
         $statement->execute();
-        $pdo->commit();
+        //$pdo->commit();
         
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  " CREATE TABLE IF NOT EXISTS HivelocityDeploymentCorrelation("
                 . "     whmcsServiceId int PRIMARY KEY NOT NULL, "
                 . "     hivelocityDeploymentId int NOT NULL "
                 . " );";
         $statement = $pdo->prepare($query);
         $statement->execute();
-        $pdo->commit();
+        //$pdo->commit();
         
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  " CREATE TABLE IF NOT EXISTS HivelocityOrderCorrelation("
                 . "     whmcsServiceId int PRIMARY KEY NOT NULL, "
                 . "     hivelocityOrderId int NOT NULL "
                 . " );";
         $statement = $pdo->prepare($query);
         $statement->execute();
-        $pdo->commit();
+        //$pdo->commit();
         
         
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  " CREATE TABLE IF NOT EXISTS HivelocityServiceCorrelation("
                 . "     whmcsServiceId int PRIMARY KEY NOT NULL, "
                 . "     hivelocityServiceId int NOT NULL "
                 . " );";
         $statement = $pdo->prepare($query);
         $statement->execute();
-        $pdo->commit();
+        //$pdo->commit();
         
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  " CREATE TABLE IF NOT EXISTS HivelocityDeviceCorrelation("
                 . "     whmcsServiceId int PRIMARY KEY NOT NULL, "
                 . "     hivelocityDeviceId int NOT NULL "
                 . " );";
         $statement = $pdo->prepare($query);
         $statement->execute();
-        $pdo->commit();
+        //$pdo->commit();
         
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  " CREATE TABLE IF NOT EXISTS HivelocityDomainCorrelation("
                 . "     hivelocityDomainId int PRIMARY KEY NOT NULL, "
                 . "     whmcsUserId int NOT NULL, "
@@ -66,24 +66,24 @@ class Helpers {
                 . " );";
         $statement = $pdo->prepare($query);
         $statement->execute();
-        $pdo->commit();
+        //$pdo->commit();
         
         
-        $pdo->beginTransaction();
+        //$pdo->beginTransaction();
         $query =  "SELECT id FROM tblemailtemplates WHERE name='Hivelocity Product Price Change'";
         $statement = $pdo->prepare($query);
         $statement->execute();
         $row = $statement->fetch();
-        $pdo->commit();
+        //$pdo->commit();
         
         if(empty($row['id'])) {
-            $pdo->beginTransaction();
+            //$pdo->beginTransaction();
             $query =  " INSERT IGNORE INTO tblemailtemplates"
                     . " (type, name, subject, message, custom)"
                     . " VALUES ('admin', 'Hivelocity Product Price Change', 'Hivelocity Product Price Change', '<p>The price of the product {\$hivelocityProductId} has changed from {\$oldPrice} to {\$newPrice}.</p>',1);";
             $statement = $pdo->prepare($query);
             $statement->execute();
-            $pdo->commit();
+            //$pdo->commit();
         }
     }
     
