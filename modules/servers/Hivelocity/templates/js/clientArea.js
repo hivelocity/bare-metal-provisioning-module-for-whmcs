@@ -256,7 +256,7 @@ function addEventShowDnsModal() {
         $('#dnsModalContentEditRecord').hide();
         var button              = event.relatedTarget;
         var hivelocityDomainId  = button.getAttribute('data-domain-id');
-        var postData = {hivelocityAction:"getDnsData", hivelocityDomainId:hivelocityDomainId};
+        var postData = {hivelocityAction:"getDnsData", serviceId:"21", hivelocityDomainId:hivelocityDomainId};
         $.post({
             type: "POST",
             url: "",
@@ -290,6 +290,13 @@ function addEventShowDnsModal() {
                 $.each(data["mx-record"], function( index, recordData ) {
                     var html = getRecordRow(recordData);
                     $('#dnsRecordsMXTable').append(html);
+                }); 
+
+// PTR ------------------------------------------------------------------------          
+                $('#dnsRecordsPTRTable').children().remove();
+                $.each(data["ptr"], function( index, recordData ) {
+                    var html = getRecordRow(recordData);
+                    $('#dnsRecordsPTRTable').append(html);
                 });    
 //------------------------------------------------------------------------------               
                 addEventRemoveRecord();
@@ -305,18 +312,21 @@ function addEventShowDnsModal() {
 function getRecordRow(recordData) {
     
     var html =  '   <tr id="' + recordData.id + '">';
-    if(recordData.type == "A") {
-        html += '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.name + '</td>' +
-                '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.address + '</td>' +
+    if(recordData.type == "MX") {
+        html += '       <td style="width:32%;   padding-left:10px;  text-align: left">' + recordData.name + '</td>' +
+                '       <td style="width:32%;   padding-left:10px;  text-align: left">' + recordData.exchange + '</td>' +
+                '       <td style="width:10%;   padding-left:10px;  text-align: left">' + recordData.preference + '</td>' +
                 '       <td style="width:10%;   padding-left:10px;  text-align: left">' + recordData.ttl + '</td>';
     } else if(recordData.type == "AAAA") {
         html += '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.name + '</td>' +
                 '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.address + '</td>' +
                 '       <td style="width:10%;   padding-left:10px;  text-align: left">' + recordData.ttl + '</td>';
+    }else if(recordData.type == "PTR") {
+        html += '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.name + '</td>' +
+                '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.address + '</td>';
     } else {
-        html += '       <td style="width:32%;   padding-left:10px;  text-align: left">' + recordData.name + '</td>' +
-                '       <td style="width:32%;   padding-left:10px;  text-align: left">' + recordData.exchange + '</td>' +
-                '       <td style="width:10%;   padding-left:10px;  text-align: left">' + recordData.preference + '</td>' +
+        html += '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData.name + '</td>' +
+                '       <td style="width:37%;   padding-left:10px;  text-align: left">' + recordData["addresses"]["0"] + '</td>' +
                 '       <td style="width:10%;   padding-left:10px;  text-align: left">' + recordData.ttl + '</td>';
     }        
     html +=     '       <td></td>' +

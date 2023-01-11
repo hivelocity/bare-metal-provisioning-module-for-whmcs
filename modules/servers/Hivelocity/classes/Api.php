@@ -169,6 +169,21 @@ class Api {
         
         return $response;
     }
+
+    static public function getBackup($productId,$optionId) {
+        
+        $resource = "/bare-metal-devices/";
+        
+        $postFields = array(
+            "period" => "hourly",
+            "productId" => $productId,
+            "option_ids" => $optionId,
+        );
+        
+        $response = self::sendRequest($resource, "GET", $postFields, true);
+        
+        return $response;
+    }
     
     static public function getProductOS($productId) {
         
@@ -354,7 +369,7 @@ class Api {
     }
     
     static public function getGraph($deviceId, $period = "day", $start = null, $end = null) {
-        $queryParams = "period=$period&interface=all";
+        $queryParams = "period=$period&interface=eth1";
 
         if ($start !== null) {
             $queryParams .= "&start=$start";
@@ -457,6 +472,15 @@ class Api {
         
         return $response;
     }
+
+    static public function getDomain($domainId) {
+        
+        $resource   = "/domains/$domainId";
+        
+        $response   = self::sendRequest($resource, "GET");
+        
+        return $response;
+    }
     
     static public function addDomain($domainName) {
         
@@ -480,14 +504,13 @@ class Api {
     }
     
     static public function addRecord($domainId, $recordType, $recordData) {
-        
+
         $resource   = "/domains/$domainId/$recordType";
         $response   = self::sendRequest($resource, "POST", $recordData);
         
         if($recordType == "mx-record") {
             $response["type"] = "MX";
         }
-        
         return $response;
     }
     
@@ -526,7 +549,6 @@ class Api {
                 $response[$key]["type"] = "MX";
             }
         }
-        
         return $response;
     }
     

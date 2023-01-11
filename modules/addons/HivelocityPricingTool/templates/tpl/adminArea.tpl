@@ -29,6 +29,10 @@
                 <td>
                     <button type="button" id = "saveButton" class = "btn btn-primary" style = "margin-left:20px">Save</button>
                 </td>
+                <td>
+                    &nbsp;&nbsp;<a href="/admin/addonmodules.php?module=HivelocityPricingTool&action=generateproducts" class="btn btn-primary">Sync Products</a>
+                </td>
+
             </tr>
         </tbody>
     </table>

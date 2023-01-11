@@ -1,12 +1,58 @@
+{literal}
+<style>
+    .stat{font-size: 22px !important;}
+</style>
+{/literal}
 <div>
     <div class="alert alert-danger text-center" id="hivelocityMainErrorBox" style="display:none"></div>
+    <div class="tiles mb-4" style="text-align: left;">
+        <div class="row no-gutters">
+            <div class="col-6 col-xl-3">
+                <a href="clientarea.php?action=services" class="tile">
+                    <div class="stat">{$dashboarddetails.location}</div>
+                    <div class="title">Device Location</div>
+                    <div class="highlight bg-color-blue"></div>
+                </a>
+            </div>
+            <div class="col-6 col-xl-3">
+                <a href="clientarea.php?action=quotes" class="tile">
+                    <div class="stat">{$dashboarddetails.renewdate}</div>
+                    <div class="title">Next Renew</div>
+                    <div class="highlight bg-color-green"></div>
+                </a>
+            </div>
+            <div class="col-6 col-xl-3">
+                <a href="supporttickets.php" class="tile">
+                    <div class="stat">{$dashboarddetails.monitorsUp} UP</div>
+                    <div class="title">Monitoring</div>
+                    <div class="highlight bg-color-red"></div>
+                </a>
+            </div>
+            <div class="col-6 col-xl-3">
+                <a href="clientarea.php?action=invoices" class="tile">
+                    <div class="stat">0/0 OK</div>
+                    <div class="title">Backups</div>
+                    <div class="highlight bg-color-gold"></div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6 col-xl-6">
+            <div class=""><h4>Service Details</h4><{$servicedetails}</div>
+        </div>
+        <div class="col-6 col-xl-6">
+            <div class=""><h4>Hardware Details</h4><{$hardwaredetails}</div>
+        </div>
+    </div>
+    <hr>
     <ul class="nav nav-tabs responsive-tabs-sm">
         <li class="active nav-item"><a data-toggle="tab" class="nav-link active" href="#tabDetails">Details</a></li>
         {if !$orderStatus}
             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpAssignments">IP Assignments</a></li>
             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabBandwidth">Bandwidth</a></li>
-            <li style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpmi">IPMI</a></li>
-            <li style="display: none" class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDns">DNS</a></li>
+            <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabIpmi">IPMI</a></li>
+            <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDns">DNS</a></li>
         {/if}
     </ul>
     <div class="tab-content" style="border-style: solid; border-color: #ddd; padding:15px; padding-top: 20px; padding-bottom: 20px; border-width: 1px; border-top-style: none;" >
@@ -184,9 +230,26 @@
                             </button>
                         </div>    
                     </div>
+                    <div class="row" style="margin-bottom:5px">
+                        <div class="col">
+                            <h6>IPMI Sensors</h6>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom:5px">
+                        <div class="col">
+                            <table id="" style="width:100%" border="1">
+                                {foreach from = $ipmisensors item = sensor}
+                                    <tr>
+                                        <td style="width:50%; text-align: center;">{$sensor.name}</td>
+                                        <td style="width:50%; text-align: center;">{$sensor.unit}</td>
+                                    </tr>    
+                                {/foreach}
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="tabDns" class="tab-pane fade" style="display: none">
+            <div id="tabDns" class="tab-pane fade">
                 <div class="container" style="width:auto">
                     <div class="row" style="margin-bottom:5px">
                         <div class="col" style="text-align: left">
@@ -299,12 +362,12 @@
                 <div class="modal-body">
                     <img src="admin/images/loading.gif" id="dnsModalLoader">
                     <div class="alert alert-danger text-center" id="hivelocityDnsModalErrorBox" style="display:none"></div>
-                    <div id="dnsModalContent" style="display: none">
+                    <div id="dnsModalContent">
                         <ul class="nav nav-tabs responsive-tabs-sm">
                             <li class="active nav-item"><a data-toggle="tab" class="nav-link active" href="#tabDnsRecordsA">A</a></li>
                             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDnsRecordsAAAA">AAAA</a></li>
                             <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDnsRecordsMX">MX</a></li>
-                            {*<li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDnsRecordsPTR">PTR</a></li>*}
+                            <li class="nav-item"><a data-toggle="tab" class="nav-link" href="#tabDnsRecordsPTR">PTR</a></li>
                         </ul>
                         <div class="tab-content" style="border-style: solid; border-color: #ddd; padding:5px; padding-top: 20px; border-width: 1px; border-top-style: none;" >
                             <div id="tabDnsRecordsA" class="tab-pane fade in active show">
@@ -337,16 +400,16 @@
                                     
                                 </table>
                             </div>
-                            {*
+                            
                             <div id="tabDnsRecordsPTR" class="tab-pane fade in">
                                 <table id="dnsRecordsPTRTable" style="width:100%">
                                     
                                 </table>
                             </div>
-                            *}
+                            
                         </div>
                     </div>
-                    <div <div id="dnsModalContentEditRecord" style="display: none">
+                    <div id="dnsModalContentEditRecord">
                         <form>
                             <table id="dnsEditRecordTable" style="width:100%">
 

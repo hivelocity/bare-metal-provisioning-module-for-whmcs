@@ -62,7 +62,7 @@ class Cron {
         $addonConfig        = Helpers::getAdonConfig();
         $serverGroupId      = $addonConfig["serverGroup"];
         $productGroupId     = $addonConfig["productGroup"];
-                
+
         $serverConfig       = Helpers::getServerConfigByServerGroupId($serverGroupId);
         
         $apiUrl             = $serverConfig["hostname"];
@@ -89,6 +89,7 @@ class Cron {
                 }
             }
         }
+
         
         $currencyList       = Helpers::getCurrencyList();
         foreach($currencyList as $currency) {
@@ -123,6 +124,28 @@ class Cron {
                     $priceConverted = $basePrice * $currencyRate;
                     $pricing[$currencyId]["monthly"] = $priceConverted;
                 }
+
+                $desc='';
+                if($remoteProductData["product_bandwidth"])
+                {
+                    $desc .="Bandwidth : ".$remoteProductData["product_bandwidth"];
+                }
+
+                if($remoteProductData["product_cpu"])
+                {
+                    $desc .="<br>CPU : ".$remoteProductData["product_cpu"];
+                }
+
+                if($remoteProductData["product_memory"])
+                {
+                    $desc .="<br>Memory : ".$remoteProductData["product_memory"];
+                }
+
+                if($remoteProductData["product_drive"])
+                {
+                    $desc .="<br>Drive : ".$remoteProductData["product_drive"];
+                }
+
                 
                 $result             = WhmcsApi::AddProduct([
                     "name"              => $remoteProductData["product_id"]." - ".$remoteProductData["product_cpu"]." - ".$remoteProductData["product_memory"]." - ".$remoteProductData["product_drive"],
@@ -135,8 +158,9 @@ class Cron {
                     "module"            => "Hivelocity",
                     "configoption1"     => $remoteProductId,
                     "configoption2"     => $billingId,
+                    "description"       => $desc,
                 ]);
-            
+
                 $localProductId     = $result["pid"];
                 
                 Helpers::addProductCustomField($localProductId);

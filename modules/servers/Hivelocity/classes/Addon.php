@@ -401,7 +401,69 @@ SCRIPT;
             $initialCreds    = Api::getInitialPassword($assignedDeviceId);
             $ips                = Api::getIpAssigments($assignedDeviceId);
         }
-               
+
+        $domainList= Api::getDomainList();
+        $ipmis= Api::getIpmiData($assignedDeviceId);
+        $ipmisensors=array();
+        foreach ($ipmis['sensors'] as $key => $value) {
+            if($value['status']==1)
+            {
+                $ipmisensors[$value['sensorId']]['name']=$value['name'];
+                $ipmisensors[$value['sensorId']]['unit']=$value['reading'].$value['units'];
+            }
+        }
+        $dashboarddetails=array();
+        $dashboarddetails["location"]=$deviceDetails["location"]["facility"];
+        $dashboarddetails["monitorsUp"]=$deviceDetails["monitorsUp"];
+        $service      = Api::getServiceDetails($deviceDetails["servicePlan"]);
+        $servicedetails='';
+        $hardwaredetails='';
+        foreach ($service['serviceOptions'] as $key => $value) {
+            if($value['name']=='Self Managed')
+            {
+                $servicedetails .= 'Managed Services<br><h6>'.$value['name'].'</h6>';
+            }
+
+            if($value['upgradeName']=='Bandwidth')
+            {
+                $servicedetails .= 'Bandwidth<br><h6>'.$value['name'].'</h6>';
+            }
+
+            if($value['upgradeName']=='DDOS')
+            {
+                $servicedetails .= 'DDOS<br><h6>'.$value['name'].'</h6>';
+            }
+
+            if($value['upgradeName']=='Processor')
+            {
+                $hardwaredetails .= 'Processor<br><h6>'.$value['name'].'</h6>';
+            }
+
+            if($value['upgradeName']=='Memory')
+            {
+                $hardwaredetails .= 'Memory<br><h6>'.$value['name'].'</h6>';
+            }
+
+            if($value['upgradeName']=='Primary Hard Drive')
+            {
+                $hardwaredetails .= 'Primary Hard Drive<br><h6>'.$value['name'].'</h6>';
+            }
+
+            if($value['upgradeName']=='Operating System')
+            {
+                $hardwaredetails .= 'Operating System<br><h6>'.$value['name'].'</h6>';
+            }
+            
+        }
+        /*foreach ($service['serviceDevices']['0'] as $key => $value) {
+            $servicedetails .= 'IP Addresses<br><h6>'.$value.'</h6>';
+        }*/
+        $dashboarddetails["renewdate"]=date('M d, y',$service["renewDate"]);
+
+        $remoteProductOptions       = Api::getProductOptions('504');
+        $backup=Api::getBackup('504','143018');
+        //print_r($backup); exit;
+
         $userIp = $_SERVER['REMOTE_ADDR'];
 
         // Show correct device power status when device is reloading
@@ -441,7 +503,12 @@ SCRIPT;
                 'deviceStatus'      => $deviceDetails['status'],
                 'devicePowerStatus' => $devicePowerStatus,
                 'ips'               => $ips,
-                'passwordExpiresInString' => $passwordExpiresInString
+                'domainList'        => $domainList,
+                'ipmisensors'        => $ipmisensors,
+                'dashboarddetails'        => $dashboarddetails,
+                'passwordExpiresInString' => $passwordExpiresInString,
+                'servicedetails' => $servicedetails,
+                'hardwaredetails' => $hardwaredetails
             ),
         );
     }

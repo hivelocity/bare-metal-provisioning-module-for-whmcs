@@ -65,7 +65,9 @@ class Addon {
 
         if($_GET['action']=='generateproducts')
         {
-            \HivelocityPricingTool\classes\Cron::synchronizeProducts();
+            //shell_exec('php '.\HivelocityPricingTool\classes\Cron::synchronizeProducts());
+            echo '<h4>Product sync will take 5 to 10 minutes.</h4>'; 
+            shell_exec('php /home/devwhmcs/public_html/modules/addons/HivelocityPricingTool/cron.php');
         }
         
         if(isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {

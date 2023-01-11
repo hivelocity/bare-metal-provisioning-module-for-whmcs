@@ -351,8 +351,15 @@ class Actions {
         
         Api::setApiDetails($apiUrl, $apiKey);
         
-        $response           = Api::addRecord($hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordData);
-        
+        if($hivelocityRecordType=='a-record')
+        {
+            $domain = Api::getDomain($hivelocityDomainId);
+            $response = Api::addRecord($domain['name'], trim($hivelocityRecordType), $hivelocityRecordData);
+        }
+        else
+        {
+            $response           = Api::addRecord($hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordData);
+        }
         $hivelocityDomainId = $response["domainId"];
         
         $return             = array(
@@ -431,11 +438,19 @@ class Actions {
             "a-record",
             "aaaa-record",
             "mx-record",
-        //    "ptr",
+            "ptr",
         ); 
         
         foreach ($recordTypes as $recordType) {
-            $response               = Api::getDnsRecordList($hivelocityDomainId, $recordType);
+            if($recordType=='a-record')
+            {
+                $domain = Api::getDomain($hivelocityDomainId);
+                $response = Api::getDnsRecordList($domain['name'], $recordType);
+
+            }
+            else{
+                $response = Api::getDnsRecordList($hivelocityDomainId, $recordType);
+            }
             $return[$recordType]    = $response;
         }
         

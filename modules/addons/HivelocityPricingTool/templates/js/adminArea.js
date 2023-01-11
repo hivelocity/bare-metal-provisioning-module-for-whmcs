@@ -34,6 +34,7 @@ $(document).ready(function() {
         var submitButton        = formDiv.find(":submit");
         submitButton.click();
     });
+
 });
 
 function onCurrencyChange() {

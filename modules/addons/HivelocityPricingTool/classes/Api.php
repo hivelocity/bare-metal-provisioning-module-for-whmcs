@@ -267,16 +267,14 @@ class Api {
         return $response;
     }
     
-    static public function getServiceList() {
+    static public function getServiceList($orderId) {
         
-        $resource = "/service/";
+        $resource = "/service/?orderId=$orderId";
         
         $response = self::sendRequest($resource);
         
         return $response;
-    }
-    
-    
+    }    
     
     static public function getDeviceList() {
         
@@ -309,19 +307,15 @@ class Api {
     }
     
     static public function getGraph($deviceId, $period = "day", $start = null, $end = null) {
-        $queryParams = "period=$period&interface=all";
-
-        if ($start !== null) {
-            $queryParams .= "&start=$start";
-        }
-
-        if ($end !== null) {
-            $queryParams .= "&end=$end";
-        }
         
-        $resource   = "/bandwidth/device/$deviceId/image?$queryParams";
+        $resource   = "/bandwidth/device/$deviceId/image";
         
-        $postFields = array();
+        $postFields = array(
+            "period"    => $period,
+            "start"     => $start,
+            "end"       => $end,
+            "interface" => "eth0",
+        );
         
         $response   = self::sendRequest($resource, "POST", $postFields, true);
         

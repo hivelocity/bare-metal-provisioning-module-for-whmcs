@@ -45,7 +45,7 @@ function onOsChange() {
     
     $('#'+fieldsIds['Control Panel']).prop("disabled", false);
     
-    if(~selectedOs.indexOf("CentOS 7.x")) {
+    if(~selectedOs.indexOf("CentOS 7.x") || ~selectedOs.indexOf("AlmaLinux 8.x") || ~selectedOs.indexOf("Rocky Linux 8.x") || ~selectedOs.indexOf("Ubuntu 20.x")) {
         
         $('#'+fieldsIds['Control Panel'] + " option:contains(cPanel)").show();
         
