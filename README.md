@@ -1,5 +1,5 @@
 What's New!
-Support for latest whmcs version 8.6.1/ PHP 8.1.13, ioncube 12x
+Support for latest whmcs version 8.6.1/ Support for PHP 7.4 & 8.1.13, ioncube 12x
 
 Auto creations / import of products and configurations options.
 
