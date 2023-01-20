@@ -30,10 +30,25 @@
                     <button type="button" id = "saveButton" class = "btn btn-primary" style = "margin-left:20px">Save</button>
                 </td>
                 <td>
-                    &nbsp;&nbsp;<a href="/admin/addonmodules.php?module=HivelocityPricingTool&action=generateproducts" class="btn btn-primary">Sync Products</a>
+                    &nbsp;&nbsp;<a {if !$disabled} href="/admin/addonmodules.php?module=HivelocityPricingTool&action=generateproducts" {/if} class="btn btn-primary" {$disabled}>Sync Products</a>
+                </td>
+            </tr>
+            {if $disabledmsg}
+            <tr>
+                <td colspan=4><br>
+                    <div class="alert alert-info">{$disabledmsg}</div>
                 </td>
 
             </tr>
+            {/if}
+            {if $crondisable}
+            <tr>
+                <td colspan=4><br>
+                    <div class="alert alert-danger">{$crondisable}</div>
+                </td>
+
+            </tr>
+            {/if}
         </tbody>
     </table>
              
@@ -61,14 +76,16 @@
                             <tr>
                                 <td><input type = "hidden"  name = "productId[{$counter}]"  value = "{$productId}"  >{$productId}</td>
                                 <td>{$productData.name}</td>
-                                <td><input type = "hidden"                                      value = "{$productData.remotePrice.$currencyId}" class = "remotePriceField"   >{$productData.remotePrice.$currencyId} {$currencyData.suffix}</td>
+                                <td><input type = "hidden" value = "{$productData.remotePrice.$currencyId}" class = "form-control input-inline input-100 remotePriceField"   >{$productData.remotePrice.$currencyId} {$currencyData.suffix}</td>
                                 <td><input type = "text"    name = "localPrice[{$counter}]"     value = "{$productData.localPrice.$currencyId}"  class = "form-control input-inline input-100 priceField"   > {$currencyData.suffix}</td>
-                                <td><input type = "text"                                        value = "{$productData.profit.$currencyId}"      class = "form-control input-inline input-100 profitField"  > %</td>
+                                <td><input type = "text" value = "{$productData.profit.$currencyId}"      class = "form-control input-inline input-100 profitField"  > %</td>
                             </tr>
                             {assign var = counter value = $counter + 1}
                         {/foreach}
                     </tbody>
                 </table>
+                <input type='hidden' name='globalprofit' value=''>
+                <input type='hidden' name='globalchange' value=''>
                 <input type = "submit" value = "Save" class = "btn btn-primary" style = "margin: auto; visibility: hidden;">
            </form>
        </div>         

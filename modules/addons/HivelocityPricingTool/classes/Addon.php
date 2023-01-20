@@ -31,8 +31,8 @@ class Addon {
             
             "name"          => "Hivelocity Pricing Tool",
             "description"   => "A simple interface allowing you to quickly change pricing for all the products using Hivelocity as the provisioning module.",
-            "version"       => "1.0.0",
-            "author"        => "<a target='_blank' rel='noopener noreferrer' href='https://www.modulesgarden.com/'>ModulesGarden</a>",
+            "version"       => "1.1",
+            "author"        => "<a target='_blank' rel='noopener noreferrer' href=''>Hivelocity</a>",
             "language"      => "english",
             "fields"        => array(
                 "priceNotification" => array (
@@ -63,11 +63,33 @@ class Addon {
     
     static public function output($params) {
 
+        $crondisable='';
+
+        $output = shell_exec('crontab -l');
+        if($output)
+        {
+            if(!str_contains($output, '/HivelocityPricingTool/cron.php') && !substr_count($output, "HivelocityPricingTool") > 1)
+            {
+                $crondisable='It seems cron is not setup yet.Please set the cron first.';
+            }
+        }
+
+        $disabled='';
+        $disabledmsg='';
+
+        $q=mysql_query("SELECT value FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
+        if(mysql_num_rows($q))
+        {
+            $disabled='disabled';
+            $disabledmsg='Product sync is in progress it may take 5-10 min.Please be patient.';
+        }
+
         if($_GET['action']=='generateproducts')
         {
-            //shell_exec('php '.\HivelocityPricingTool\classes\Cron::synchronizeProducts());
-            echo '<h4>Product sync will take 5 to 10 minutes.</h4>'; 
-            shell_exec('php /home/devwhmcs/public_html/modules/addons/HivelocityPricingTool/cron.php');
+            mysql_query("DELETE FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
+            insert_query("mod_hivelocity_cron",array("value"=>'RunFiveMinCron',"created_at"=>date('Y-m-d h:i:s')));
+            $disabled='disabled';
+            $disabledmsg='Product sync is in progress it may take 5-10 min.Please be patient.';
         }
         
         if(isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {
@@ -78,15 +100,32 @@ class Addon {
         
         $success    = false;
         $error      = false;
-        
+        $productList            = Helpers::getProductList();
         try {
-            if($action == "updatePricing") {
-                
-                foreach($_POST["productId"] as $index => $productId) {
-                    $price      = $_POST["localPrice"][$index];
-                    $currencyId = $_POST["currencyId"];
-                    
-                    Helpers::setProductPrice($productId, $price, $currencyId);
+            if($action == "updatePricing") { 
+
+                if($_POST["globalchange"]=='true'){
+
+                    unset($_POST['DataTables_Table_0_length']);
+                    $globalprofit=(float)$_POST["globalprofit"];
+                    foreach($productList as $productData) {
+                        $remoteProductPrice    = Helpers::getHivelocityProductPrice($productData["configoption1"]);
+                        $profit         = ($remoteProductPrice * $globalprofit) / 100;
+                        $price          = $remoteProductPrice + $profit;
+                        $currencyId = $_POST["currencyId"];
+                        
+                        Helpers::setProductPrice($productData["id"], $price, $currencyId);
+                    }
+
+                }
+                else
+                {
+                    foreach($_POST["productId"] as $index => $productId) {
+                        $price      = $_POST["localPrice"][$index];
+                        $currencyId = $_POST["currencyId"];
+                        
+                        Helpers::setProductPrice($productId, $price, $currencyId);
+                    }
                 }
                 
                 $success = true;
@@ -100,14 +139,14 @@ class Addon {
         $smartyVarsCurrencyList = array();
         
         foreach($currencyList as $currencyData) {
-            
+            $currencyId=$currencyData["id"];
             $smartyVarsCurrencyList[$currencyData["id"]] = array(
                 "code"      => $currencyData["code"],
                 "suffix"    => $currencyData["suffix"]
             );
         }
         
-        $productList            = Helpers::getProductList();
+        
         
         $smartyVarsProductList = array();
             
@@ -122,8 +161,8 @@ class Addon {
             Api::setApiDetails($apiUrl, $apiKey);
             
             $remoteProductId    = $productData["configoption1"];
-            
-            try {
+            //$remoteProductPrice = 0;
+            /*try {
                 $remoteProductData  = Api::getProductDetails($remoteProductId);
             } catch ( \Exception $e) {
                 continue;
@@ -133,7 +172,8 @@ class Addon {
             foreach($remoteProductData as $location => $data) {
                 $remoteProductPrice = $data[0]["product_monthly_price"];
                 break;
-            }
+            } */
+            $remoteProductPrice    = Helpers::getHivelocityProductPrice($remoteProductId);
             
             $usdRate            = Helpers::getCurrencyRate("USD");
             
@@ -146,7 +186,7 @@ class Addon {
             $smartyVarsProductList[$productId] = array(
                 "name" => $productData["name"]
             );
-            
+
             foreach($currencyList as $currencyData) {
                 
                 $currencyId                     = $currencyData["id"];
@@ -174,6 +214,9 @@ class Addon {
         $smarty->assign('currencyList', $smartyVarsCurrencyList);
         $smarty->assign('success',      $success);
         $smarty->assign('error',        $error);
+        $smarty->assign('disabled',        $disabled);
+        $smarty->assign('disabledmsg',        $disabledmsg);
+        $smarty->assign('crondisable',        $crondisable);
         
         $smarty->caching        = false;
         $smarty->compile_dir    = $GLOBALS['templates_compiledir'];

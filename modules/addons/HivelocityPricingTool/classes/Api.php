@@ -67,7 +67,7 @@ class Api {
                 "Json"      => !empty($postJson)?$postJson:"",
                 "Query"     => !empty($postQuery)?$postQuery:"",
             );
-            logModuleCall("Hivelocity", $action, $request, "", $response);
+            //logModuleCall("Hivelocity", $action, $request, "", $response);
         }
         //debug
         
