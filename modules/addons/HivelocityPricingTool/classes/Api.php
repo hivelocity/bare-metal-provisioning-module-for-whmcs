@@ -46,7 +46,8 @@ class Api {
                 "User-Agent: PostmanRuntime/7.26.8",
                 "Accept: */*",
                 "Accept-Encoding: ''",
-                "X-API-KEY: $apiKey"
+                "X-API-KEY: $apiKey",
+                "Referer: WHMCS"
         ));
         
         $response   = curl_exec($ch);
