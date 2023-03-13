@@ -1,6 +1,7 @@
 $(document).ready(function() {
     
     var fieldsIds       = jQuery.parseJSON(hivelocityConfigOptionFieldsIdsJson);
+    var customIds = jQuery.parseJSON(hivelocityCustomFieldIdsJson);
     var availability    = jQuery.parseJSON(hivelocityLocationAvailability);
    
     $.each(availability, function(index, value) {
@@ -14,7 +15,7 @@ $(document).ready(function() {
         outOfStock();
     }
     
-    onOsChange();
+    onOsChange(); 
     onLocChange();
     
     $('#'+fieldsIds['Operating System']).change(function() {
@@ -32,6 +33,59 @@ $(document).ready(function() {
     $('#'+fieldsIds['Managed Services']).change(function() {
         onMsChange();
     });
+
+    if($('#'+fieldsIds['Add user data']).not(":checked") && $('#'+fieldsIds['Customize SSH Key Access']).not(":checked"))
+    {
+        
+        $('.sub-heading').last().hide();
+        $('#'+customIds['init']).parent().hide();
+        $('#'+customIds['SSH Key Content']).parent().hide();
+        $('#'+customIds['Name']).parent().hide();
+    }
+    else
+    {
+        $('.sub-heading').last().show();
+        $('#'+customIds['init']).parent().show();
+        $('#'+customIds['SSH Key Content']).parent().show();
+        $('#'+customIds['Name']).parent().show();
+    }
+
+    $('#'+fieldsIds['Add user data']).change(function() { 
+        
+        if($('#'+fieldsIds['Add user data']).is(":checked"))
+        {
+            $('.sub-heading').last().show();
+            $('#'+customIds['init']).parent().show();
+        }
+        else
+        {
+            if(!$('#'+fieldsIds['Customize SSH Key Access']).is(":checked"))
+            {
+                $('.sub-heading').last().hide();
+            }
+            $('#'+customIds['init']).parent().hide();
+        }
+    }); 
+
+    $('#'+fieldsIds['Customize SSH Key Access']).change(function() {
+        
+        if($('#'+fieldsIds['Customize SSH Key Access']).is(":checked"))
+        {
+            $('.sub-heading').last().show();
+            $('#'+customIds['SSH Key Content']).parent().show();
+            $('#'+customIds['Name']).parent().show();
+        }
+        else
+        {
+            if(!$('#'+fieldsIds['Add user data']).is(":checked"))
+            {
+                $('.sub-heading').last().hide();
+            }
+            $('#'+customIds['SSH Key Content']).parent().hide();
+            $('#'+customIds['Name']).parent().hide();
+        }
+    }); 
+
 });
 
 function onOsChange() {

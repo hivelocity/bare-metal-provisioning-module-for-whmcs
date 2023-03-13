@@ -470,20 +470,46 @@ SCRIPT;
             "Daily Backup & Rapid Restore",
             "Cloud Storage",
             "Data Migration",
+            "Add user data",
+            "Customize SSH Key Access",
         );
         
-        $configOptionIds = array();
+        $configOptionFieldIds = array();
         
         foreach($expectedOptions as $optionName) {
-            $configOptionFieldIds[$optionName] =  'inputConfigOption'.Helpers::getConfigOptionId($configOptionGroupId, $optionName);
+
+            if($optionName=="Add user data" || $optionName=="Customize SSH Key Access")
+            {
+                $configOptionFieldIds[$optionName] =  'inputConfigOption'.Helpers::getConfigOptionIdByOption($optionName);
+            }
+            else
+            {
+                $configOptionFieldIds[$optionName] =  'inputConfigOption'.Helpers::getConfigOptionId($configOptionGroupId, $optionName);
+            }
+            
+        }
+
+        $expectedCusFields = array(
+            "init",
+            "SSH Key Content",
+            "Name",
+        );
+        
+        $customFieldIds = array();
+        
+        foreach($expectedCusFields as $optionName) {
+            $customFieldIds[$optionName] =  'customfield'.Helpers::getCustomFieldId($productId, $optionName);
         }
         
         $configOptionFieldIdsJson   = json_encode($configOptionFieldIds);
+        $customFieldIdsJson   = json_encode($customFieldIds);
         $locationAvailabilityJson   = json_encode($locationAvailability);
         
         $script = <<<SCRIPT
             <script>
+                var productId = '$productId';
                 var hivelocityConfigOptionFieldsIdsJson = '$configOptionFieldIdsJson';
+                var hivelocityCustomFieldIdsJson = '$customFieldIdsJson';
                 var hivelocityLocationAvailability      = '$locationAvailabilityJson';
             </script>
             <script src="modules/servers/Hivelocity/templates/js/modifyCartConfProductPage.js" type="text/javascript"></script>

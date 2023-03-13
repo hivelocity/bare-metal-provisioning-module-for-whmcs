@@ -54,6 +54,7 @@ add_hook('AdminAreaFooterOutput', 1, function($params) {
     
     require_once 'Autoloader.php';
     
+    
     try {
         return \Hivelocity\classes\Hooks::modifyServicePage($params);
     } catch (Exception $e) {}

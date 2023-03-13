@@ -471,6 +471,24 @@ class Helpers {
         }
         return $row["id"];
     }
+
+    static public function getCustomFieldId($productId,$fieldname) {
+        
+        $productId = intval($productId);
+        
+        $pdo = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query =  "SELECT id FROM tblcustomfields WHERE type = 'product' AND relid = '$productId' AND fieldname = '$fieldname'";
+        $statement = $pdo->prepare($query);
+        $statement->execute();
+        $row = $statement->fetch();
+        $pdo->commit();
+        
+        if(!isset($row["id"]) || empty($row["id"])) {
+            return false;
+        }
+        return $row["id"];
+    }
     
     static public function addProductCustomField($productId) {
         
@@ -660,6 +678,24 @@ class Helpers {
         $query      = "SELECT id FROM tblproductconfigoptions WHERE gid = ? AND optionname = ?";
         $statement  = $pdo->prepare($query);
         $statement->execute([$groupId, $name]);
+        $row        = $statement->fetch();
+        $pdo->commit();
+        
+        if(!isset($row["id"]) || empty($row["id"])) {
+            return false;
+        }
+        return $row["id"];
+    }
+
+    static public function getConfigOptionIdByOption($name) {
+        
+        $name       = htmlspecialchars($name, ENT_QUOTES);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT id FROM tblproductconfigoptions WHERE optionname = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$name]);
         $row        = $statement->fetch();
         $pdo->commit();
         
