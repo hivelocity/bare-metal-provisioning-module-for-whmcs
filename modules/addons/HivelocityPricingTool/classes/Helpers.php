@@ -977,7 +977,7 @@ class Helpers {
         
         $pdo = Capsule::connection()->getPdo();
         $pdo->beginTransaction();
-        $query =  "SELECT id FROM tblproducts WHERE configoption1 = ?";
+        $query =  "SELECT id FROM tblproducts WHERE configoption1 = '{$remoteProductId}' AND servertype = 'Hivelocity'";
         $statement = $pdo->prepare($query);
         $statement->execute([$remoteProductId]);
         $row = $statement->fetch();
