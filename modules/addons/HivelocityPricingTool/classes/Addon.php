@@ -74,7 +74,7 @@ class Addon
                     $crondisable = 'It seems cron is not setup yet.Please set the cron first.';
                 }
             }
-        }else{
+        } else {
             $crondisable = 'Please enable "shell_exec" function in your php.ini file.';
         }
 
@@ -88,7 +88,9 @@ class Addon
         }
 
         if ($_GET['action'] == 'generateproducts') {
-            Capsule::table('mod_hivelocity_cron')->update([
+            Capsule::table('mod_hivelocity_cron')->updateOrCreate([
+                'value' => 'RunFiveMinCron',
+            ], [
                 'created_at' => date('Y-m-d h:i:s')
             ]);
             $disabled = 'disabled';
