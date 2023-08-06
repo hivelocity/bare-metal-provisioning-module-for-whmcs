@@ -2,6 +2,8 @@
 
 namespace HivelocityPricingTool\classes;
 
+use WHMCS\Database\Capsule;
+
 class Addon
 {
     static public function config()
@@ -64,19 +66,23 @@ class Addon
     {
         $crondisable = '';
 
-        $output = shell_exec('crontab -l');
-        if ($output) {
-            if (!str_contains($output, '/HivelocityPricingTool/cron.php') && !substr_count($output,
-                    "HivelocityPricingTool") > 1) {
-                $crondisable = 'It seems cron is not setup yet.Please set the cron first.';
+        if (function_exists('shell_exec')) {
+            $output = shell_exec('crontab -l');
+            if ($output) {
+                if (!str_contains($output, '/HivelocityPricingTool/cron.php') && !substr_count($output,
+                        "HivelocityPricingTool") > 1) {
+                    $crondisable = 'It seems cron is not setup yet.Please set the cron first.';
+                }
             }
+        }else{
+            $crondisable = 'Please enable "shell_exec" function in your php.ini file.';
         }
 
         $disabled = '';
         $disabledmsg = '';
 
-        $q = mysql_query("SELECT value FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
-        if (mysql_num_rows($q)) {
+        $q = Capsule::table('mod_hivelocity_cron')->select('value')->where('value', 'RunFiveMinCron')->count();
+        if ($q) {
             $disabled = 'disabled';
             $disabledmsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
         }
