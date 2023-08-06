@@ -5,13 +5,14 @@ if (!defined("WHMCS")) {
 }
 
 use WHMCS\Database\Capsule;
+use HivelocityPricingTool\classes\Addon;
 
 require_once 'Autoloader.php';
 
 function HivelocityPricingTool_config()
 {
     try {
-        return \HivelocityPricingTool\classes\Addon::config();
+        return Addon::config();
     } catch (Exception $e) {
         return ['error' => $e->getMessage()];
     }
@@ -46,7 +47,7 @@ function HivelocityPricingTool_deactivate()
 function HivelocityPricingTool_output($params)
 {
     try {
-        return \HivelocityPricingTool\classes\Addon::output($params);
+        return Addon::output($params);
     } catch (Exception $e) {
         return ['error' => $e->getMessage()];
     }
