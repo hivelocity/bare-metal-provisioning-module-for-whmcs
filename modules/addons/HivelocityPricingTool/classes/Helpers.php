@@ -240,7 +240,8 @@ class Helpers
             $serverIds[] = $rel->serverid;
         }
 
-        $data = Capsule::table('tblservers')->whereIn('id', $serverIds)->where('hostname', 'LIKE', '%hivelocity%')->first();
+        $data = Capsule::table('tblservers')->whereIn('id', $serverIds)->where('hostname', 'LIKE', '%hivelocity%')
+            ->first();
 
         return (array) $data ?? false;
     }
@@ -1039,19 +1040,7 @@ class Helpers
 
     public static function getCurrencyRate($currencyCode)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT rate FROM tblcurrencies WHERE code = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$currencyCode]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["rate"]) && !empty($row["rate"])) {
-            return $row["rate"];
-        } else {
-            return false;
-        }
+        return Capsule::table('tblcurrencies')->where('code', $currencyCode)->select('rate')->first()->rate ?? false;
     }
 
     public static function getCurrencyList(): array
