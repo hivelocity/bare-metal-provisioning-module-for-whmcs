@@ -1,30 +1,27 @@
 <?php
 
-require dirname(dirname(dirname(__DIR__))).'/init.php';
+require dirname(__DIR__, 3) . '/init.php';
 require_once 'Autoloader.php';
 
+use HivelocityPricingTool\classes\Cron;
+use HivelocityPricingTool\classes\Helpers;
+
 try {
-    logModuleCall('high','cron','first',$argv);
-    \HivelocityPricingTool\classes\Cron::priceChangeNotify();
+    logModuleCall('high', 'cron', 'first', $argv);
+    Cron::priceChangeNotify();
     parse_str($argv[1], $params);
-    if($params['fivemincron'])
-    {
-    	$q=mysql_query("SELECT value FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
-    	if(mysql_num_rows($q))
-    	{
-    		logModuleCall('high','cron','2nd',$params);
-    		\HivelocityPricingTool\classes\Cron::synchronizeProducts();
-    		mysql_query("DELETE FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
-    	}
+    if ($params['fivemincron']) {
+        if (Helpers::isRunFiveMinCronExist()) {
+            logModuleCall('high', 'cron', '2nd', $params);
+            Cron::synchronizeProducts();
+            Helpers::deleteRunFiveMinCron();
+        }
+    } else {
+        logModuleCall('high', 'cron', '3rd', 'once a day');
+        Cron::synchronizeProducts();
     }
-    else
-    {
-    	logModuleCall('high','cron','3rd','once a day');
-    	\HivelocityPricingTool\classes\Cron::synchronizeProducts();
-    }
-    
-} catch (Exception $e) {
+} catch (Exception|Throwable $e) {
     $loggedWhmcsUserId = $_SESSION["uid"];
-    logActivity("HivelocityPricingTool: ".$e->getMessage(), $loggedWhmcsUserId);
+    logActivity("HivelocityPricingTool: " . $e->getMessage(), $loggedWhmcsUserId);
 }
 
