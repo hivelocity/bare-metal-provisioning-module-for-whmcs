@@ -12,8 +12,8 @@ class Addon
         $serverGroupOptions = [];
 
         foreach ($serverGroupList as $serverGroupData) {
-            $serverGroupId = $serverGroupData->id;
-            $serverGroupName = $serverGroupData->name;
+            $serverGroupId = $serverGroupData['id'];
+            $serverGroupName = $serverGroupData['name'];
 
             $serverGroupOptions[$serverGroupId] = $serverGroupName;
         }
@@ -22,8 +22,8 @@ class Addon
         $productGropupOptions = [];
 
         foreach ($productGropupList as $productGroupData) {
-            $productGroupId = $productGroupData->id;
-            $productGroupName = $productGroupData->name;
+            $productGroupId = $productGroupData['id'];
+            $productGroupName = $productGroupData['name'];
 
             $productGropupOptions[$productGroupId] = $productGroupName;
         }
@@ -112,13 +112,13 @@ class Addon
                     unset($_POST['DataTables_Table_0_length']);
                     $globalProfit = (float) $_POST["globalprofit"];
                     foreach ($productList as $productData) {
-                        $remoteProductPrice = Helpers::getHivelocityProductPrice($productData->configoption1);
+                        $remoteProductPrice = Helpers::getHivelocityProductPrice($productData['configoption1']);
                         if ($remoteProductPrice) {
                             $profit = ($remoteProductPrice * $globalProfit) / 100;
                             $price = $remoteProductPrice + $profit;
                             $currencyId = $_POST["currencyId"];
 
-                            Helpers::setProductPrice($productData->id, $price, $currencyId);
+                            Helpers::setProductPrice($productData['id'], $price, $currencyId);
                         }
                     }
                 } else {

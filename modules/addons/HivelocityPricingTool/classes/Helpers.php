@@ -273,7 +273,8 @@ class Helpers
 
     public static function getServerGroupList(): array
     {
-        return Capsule::table('tblservergroups')->get()->toArray() ?? [];
+        $data = Capsule::table('tblservergroups')->get()->toArray();
+        return self::toArray($data);
     }
 
     public static function getProductCustomFieldId($productId)
@@ -400,12 +401,15 @@ class Helpers
 
     public static function getProductList(): array
     {
-        return Capsule::table('tblproducts')->where('servertype', 'Hivelocity')->get()->toArray() ?? [];
+        $data = Capsule::table('tblproducts')->where('servertype', 'Hivelocity')->get()->toArray();
+        return self::toArray($data);
+
     }
 
     public static function getProductGroupList(): array
     {
-        return Capsule::table('tblproductgroups')->get()->toArray() ?? [];
+        $data = Capsule::table('tblproductgroups')->get()->toArray();
+        return self::toArray($data);
     }
 
     public static function getConfigOptionList($configOptionGroupId)
@@ -1076,17 +1080,10 @@ class Helpers
         }
     }
 
-    public static function getCurrencyList()
+    public static function getCurrencyList(): array
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblcurrencies";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $rows = $statement->fetchAll();
-        $pdo->commit();
-
-        return $rows;
+        $data = Capsule::table('tblcurrencies')->get()->toArray();
+        return self::toArray($data);
     }
 
     public static function getProductPrice($productId, $currencyId)
@@ -1103,6 +1100,15 @@ class Helpers
             return $row["monthly"];
         } else {
             return false;
+        }
+    }
+
+    public static function toArray(array $data): array
+    {
+        if ($data) {
+            return json_decode(json_encode($data), true);
+        }else{
+            return [];
         }
     }
 
