@@ -565,7 +565,7 @@ class Helpers
             'type' => 'product',
             'relid' => $productId,
             'currency' => $currencyId,
-        ],[
+        ], [
             'monthly' => $price
         ]);
     }

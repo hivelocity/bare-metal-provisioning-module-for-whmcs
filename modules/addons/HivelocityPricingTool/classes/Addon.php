@@ -86,7 +86,7 @@ class Addon
             Helpers::createRunFiveMinCron();
         }
 
-        if($_GET['action'] == 'generateproducts' || Helpers::isRunFiveMinCronExist()){
+        if ($_GET['action'] == 'generateproducts' || Helpers::isRunFiveMinCronExist()) {
             $disabled = 'disabled';
             $disabledMsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
         }
