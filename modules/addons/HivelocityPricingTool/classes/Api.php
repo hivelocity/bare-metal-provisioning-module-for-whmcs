@@ -6,8 +6,8 @@ use Exception;
 
 class Api
 {
-    static private $apiUrl;
-    static private $apiKey;
+    static private string $apiUrl;
+    static private string $apiKey;
 
     static public function setApiDetails($apiUrl, $apiKey)
     {
@@ -141,41 +141,36 @@ class Api
     static public function getProductList()
     {
         $resource = "/inventory/product";
-        $response = self::sendRequest($resource);
 
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getProductDetails($productId)
     {
         $resource = "/inventory/product/$productId";
-        $response = self::sendRequest($resource);
 
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getProductOptions($productId)
     {
         $resource = "/product/$productId/options?groupBy=upgrade";
-        $response = self::sendRequest($resource);
 
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getProductOS($productId)
     {
         $resource = "/product/$productId/operating-systems";
-        $response = self::sendRequest($resource);
 
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getBillingInfoList()
     {
         $resource = "/billing-info/";
-        $response = self::sendRequest($resource);
 
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function createDeployment($deploymentName)
@@ -186,27 +181,21 @@ class Api
             "deploymentName" => $deploymentName,
         ];
 
-        $response = self::sendRequest($resource, "POST", $postFields, true);
-
-        return $response;
+        return self::sendRequest($resource, "POST", $postFields, true);
     }
 
     static public function getDeploymentList()
     {
         $resource = "/deploy/";
 
-        $response = self::sendRequest($resource);
-
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getDeploymentDetails($deploymentId)
     {
         $resource = "/deploy/$deploymentId";
 
-        $response = self::sendRequest($resource);
-
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function configureDeployment($deploymentId, $productId, $locationId, $osId, $panelId, $hostName,
@@ -227,9 +216,7 @@ class Api
             $postFields["options"] = [$panelId];
         }
 
-        $response = self::sendRequest($resource, "PUT", $postFields);
-
-        return $response;
+        return self::sendRequest($resource, "PUT", $postFields);
     }
 
     static public function executeDeployment($deploymentId, $billingInfoId)
@@ -240,36 +227,28 @@ class Api
             "billingInfo" => $billingInfoId,
         ];
 
-        $response = self::sendRequest($resource, "POST", $postFields);
-
-        return $response;
+        return self::sendRequest($resource, "POST", $postFields);
     }
 
     static public function getInvoiceList()
     {
         $resource = "/invoice/";
 
-        $response = self::sendRequest($resource);
-
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getOrderList()
     {
         $resource = "/order/";
 
-        $response = self::sendRequest($resource);
-
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getServiceList($orderId)
     {
         $resource = "/service/?orderId=$orderId";
 
-        $response = self::sendRequest($resource);
-
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function getDeviceList()
@@ -284,9 +263,8 @@ class Api
     static public function getDeviceDetails($deviceId)
     {
         $resource = "/device/$deviceId";
-        $response = self::sendRequest($resource);
 
-        return $response;
+        return self::sendRequest($resource);
     }
 
     static public function cancelDevice($deviceId)
@@ -297,9 +275,7 @@ class Api
             "deviceId" => $deviceId,
         ];
 
-        $response = self::sendRequest($resource, "POST", $postFields);
-
-        return $response;
+        return self::sendRequest($resource, "POST", $postFields);
     }
 
     static public function getGraph($deviceId, $period = "day", $start = null, $end = null)
@@ -313,9 +289,7 @@ class Api
             "interface" => "eth0",
         ];
 
-        $response = self::sendRequest($resource, "POST", $postFields, true);
-
-        return $response;
+        return self::sendRequest($resource, "POST", $postFields, true);
     }
 
     static public function getBandwidthDetails($deviceId, $period = "day", $start = null, $end = null)
@@ -329,9 +303,7 @@ class Api
             "interface" => "eth0",
         ];
 
-        $response = self::sendRequest($resource, "POST", $postFields, true);
-
-        return $response;
+        return self::sendRequest($resource, "POST", $postFields, true);
     }
 
     static public function executePowerAction($deviceId, $powerAction)
@@ -342,9 +314,7 @@ class Api
             "action" => $powerAction,
         ];
 
-        $response = self::sendRequest($resource, "POST", $postFields, true);
-
-        return $response;
+        return self::sendRequest($resource, "POST", $postFields, true);
     }
 
     static public function bootDevice($deviceId)
