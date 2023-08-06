@@ -88,8 +88,9 @@ class Addon
         }
 
         if ($_GET['action'] == 'generateproducts') {
-            mysql_query("DELETE FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
-            insert_query("mod_hivelocity_cron", ["value" => 'RunFiveMinCron', "created_at" => date('Y-m-d h:i:s')]);
+            Capsule::table('mod_hivelocity_cron')->update([
+                'created_at' => date('Y-m-d h:i:s')
+            ]);
             $disabled = 'disabled';
             $disabledmsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
         }
@@ -155,18 +156,7 @@ class Addon
             Api::setApiDetails($apiUrl, $apiKey);
 
             $remoteProductId = $productData["configoption1"];
-            //$remoteProductPrice = 0;
-            /*try {
-                $remoteProductData  = Api::getProductDetails($remoteProductId);
-            } catch ( \Exception $e) {
-                continue;
-            }
 
-            $remoteProductPrice = 0;
-            foreach($remoteProductData as $location => $data) {
-                $remoteProductPrice = $data[0]["product_monthly_price"];
-                break;
-            } */
             $remoteProductPrice = Helpers::getHivelocityProductPrice($remoteProductId);
 
             $usdRate = Helpers::getCurrencyRate("USD");
