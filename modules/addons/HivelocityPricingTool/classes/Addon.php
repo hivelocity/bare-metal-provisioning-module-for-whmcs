@@ -69,7 +69,7 @@ class Addon
         if (function_exists('shell_exec')) {
             $output = shell_exec('crontab -l');
             if ($output) {
-                if (!str_contains($output, '/HivelocityPricingTool/cron.php') && !substr_count($output,
+                if (is_numeric(strpos($output, '/HivelocityPricingTool/cron.php')) && !substr_count($output,
                         "HivelocityPricingTool") > 1) {
                     $crondisable = 'It seems cron is not setup yet.Please set the cron first.';
                 }
