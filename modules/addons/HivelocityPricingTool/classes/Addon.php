@@ -78,25 +78,6 @@ class Addon
             $cronDisable = 'Please enable "shell_exec" function in your php.ini file.';
         }
 
-        $disabled = '';
-        $disabledMsg = '';
-
-        $queryExists = Capsule::table('mod_hivelocity_cron')->select('value')->where('value', 'RunFiveMinCron')
-            ->count();
-
-        if ($_GET['action'] == 'generateproducts') {
-            Capsule::table('mod_hivelocity_cron')->updateOrCreate([
-                'value' => 'RunFiveMinCron',
-            ], [
-                'created_at' => date('Y-m-d h:i:s')
-            ]);
-        }
-
-        if ($queryExists || $_GET['action'] == 'generateproducts') {
-            $disabled = 'disabled';
-            $disabledMsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
-        }
-
         if (isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {
             $action = $_POST["hivelocityPricingToolAction"];
         } else {
@@ -200,8 +181,6 @@ class Addon
         $smarty->assign('currencyList', $smartyVarsCurrencyList);
         $smarty->assign('success', $success);
         $smarty->assign('error', $error);
-        $smarty->assign('disabled', $disabled);
-        $smarty->assign('disabledmsg', $disabledMsg);
         $smarty->assign('crondisable', $cronDisable);
 
         $smarty->caching = false;
