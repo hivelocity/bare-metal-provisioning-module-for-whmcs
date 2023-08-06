@@ -4,8 +4,7 @@ namespace HivelocityPricingTool\classes;
 
 class WhmcsApi
 {
-
-    static public function __callStatic($name, $args)
+    public static function __callStatic($name, $args)
     {
         $command = $name;
         $postData = $args[0];

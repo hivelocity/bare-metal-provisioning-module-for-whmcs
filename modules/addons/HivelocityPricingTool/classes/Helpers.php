@@ -2,8 +2,8 @@
 
 namespace HivelocityPricingTool\classes;
 
-use Illuminate\Database\Capsule\Manager;
 use WHMCS\Database\Capsule;
+use Exception;
 
 class Helpers
 {
@@ -13,20 +13,14 @@ class Helpers
         logmodulecall("HivelocityPricingTool Debug Log", $desc, $data, "", "");
     }
 
-    public static function getAdonConfig()
+    public static function getAddonConfig(): array
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tbladdonmodules WHERE module = 'HivelocityPricingTool'";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $rows = $statement->fetchAll();
-        $pdo->commit();
+        $configs = Capsule::table('tbladdonmodules')->where('module', 'HivelocityPricingTool')->get();
 
         $addonConfig = [];
 
-        foreach ($rows as $row) {
-            $addonConfig[$row["setting"]] = $row["value"];
+        foreach ($configs as $config) {
+            $addonConfig[$config->setting] = $config->value;
         }
 
         return $addonConfig;
@@ -34,7 +28,8 @@ class Helpers
 
     public static function isNotificationEnabled(): bool
     {
-        $value = Capsule::table('tbladdonmodules')->where('module', 'HivelocityPricingTool')->where('setting', 'priceNotification')->first()->value ?? '';
+        $value = Capsule::table('tbladdonmodules')->where('module', 'HivelocityPricingTool')
+                ->where('setting', 'priceNotification')->first()->value ?? '';
 
         return $value == 'on';
     }
@@ -52,87 +47,6 @@ class Helpers
     {
         return Capsule::table('HivelocityProductPrices')->where('hivelocityProductId', $hivelocityProductId)
                 ->first()->hivelocityProductPrice ?? false;
-    }
-
-    public static function saveHivelocityDeploymentCorrelation($whmcsServiceId, $hivelocityDeploymentId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO HivelocityDeploymentCorrelation (whmcsServiceId, hivelocityDeploymentId) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityDeploymentId = ?;";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$whmcsServiceId, $hivelocityDeploymentId, $hivelocityDeploymentId]);
-        $pdo->commit();
-    }
-
-    public static function getHivelocityDeploymentCorrelation($whmcsServiceId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT hivelocityDeploymentId FROM HivelocityDeploymentCorrelation WHERE whmcsServiceId = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$whmcsServiceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["hivelocityDeploymentId"])) {
-            return $row["hivelocityDeploymentId"];
-        } else {
-            return false;
-        }
-    }
-
-    public static function saveHivelocityServiceCorrelation($whmcsServiceId, $hivelocityServiceId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO HivelocityServiceCorrelation (whmcsServiceId, hivelocityServiceId) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityServiceId = ?;";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$whmcsServiceId, $hivelocityServiceId, $hivelocityServiceId]);
-        $pdo->commit();
-    }
-
-    public static function getHivelocityServiceCorrelation($whmcsServiceId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT hivelocityServiceId FROM HivelocityServiceCorrelation WHERE whmcsServiceId = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$whmcsServiceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["hivelocityServiceId"])) {
-            return $row["hivelocityServiceId"];
-        } else {
-            return false;
-        }
-    }
-
-    public static function saveHivelocityDeviceCorrelation($whmcsServiceId, $hivelocityDeviceId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO HivelocityDeviceCorrelation (whmcsServiceId, hivelocityDevicetId) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityDevicetId = ?;";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$whmcsServiceId, $hivelocityDeviceId, $hivelocityDeviceId]);
-        $pdo->commit();
-    }
-
-    public static function getHivelocityDeviceCorrelation($whmcsServiceId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT hivelocityDevicetId FROM HivelocityDeviceCorrelation WHERE whmcsServiceId = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$whmcsServiceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["hivelocityDevicetId"])) {
-            return $row["hivelocityDevicetId"];
-        } else {
-            return false;
-        }
     }
 
     public static function getLocationName($locationId)
@@ -219,13 +133,13 @@ class Helpers
 
     public static function getServerConfigByServerGroupId(int $serverGroupId)
     {
-        $rels = Capsule::table('tblservergroupsrel')->where('groupid', $serverGroupId)->get();
+        $serverGroupRel = Capsule::table('tblservergroupsrel')->where('groupid', $serverGroupId)->get();
 
-        if ($rels->count() < 1) {
+        if ($serverGroupRel->count() < 1) {
             return false;
         }
         $serverIds = [];
-        foreach ($rels as $rel) {
+        foreach ($serverGroupRel as $rel) {
             $serverIds[] = $rel->serverid;
         }
 
@@ -242,126 +156,57 @@ class Helpers
         return self::toArray($data);
     }
 
-    public static function getProductCustomFieldId($productId)
+    public static function addProductCustomField(int $productId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblcustomfields WHERE type = 'product' AND relid = '$productId' AND fieldname LIKE 'hivelocityDeviceId%'";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        }
-
-        return $row["id"];
+        Capsule::table('tblcustomfields')->insert([
+            'type' => 'product',
+            'relid' => $productId,
+            'fieldname' => 'hivelocityDeviceId|Device ID',
+            'fieldtype' => 'text',
+            'adminonly' => 'on',
+        ]);
     }
 
-    public static function addProductCustomField($productId)
+    public static function hideProduct(int $productId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly) VALUES ('product', $productId, 'hivelocityDeviceId|Device ID', 'text', 'on')";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $pdo->commit();
+        Capsule::table('tblproducts')->where('id', $productId)->update([
+            'hidden' => 1,
+        ]);
     }
 
-    public static function hideProduct($productId)
+    public static function unHideProduct(int $productId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "UPDATE tblproducts SET hidden = 1 WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId]);
-        $pdo->commit();
+        Capsule::table('tblproducts')->where('id', $productId)->update([
+            'hidden' => 0,
+        ]);
     }
 
-    public static function unhideProduct($productId)
+    public static function hideConfigOption(int $configOptionId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "UPDATE tblproducts SET hidden = 0 WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId]);
-        $pdo->commit();
+        Capsule::table('tblproductconfigoptions')->where('id', $configOptionId)->update([
+            'hidden' => 1,
+        ]);
     }
 
-    public static function hideConfigOption($configOptionId)
+    public static function unHideConfigOption(int $configOptionId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "UPDATE tblproductconfigoptions SET hidden = 1 WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$configOptionId]);
-        $pdo->commit();
+        Capsule::table('tblproductconfigoptions')->where('id', $configOptionId)->update([
+            'hidden' => 0,
+        ]);
     }
 
-    public static function unHideConfigOption($configOptionId)
+    public static function hideConfigOptionSub(int $configOptionSubId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "UPDATE tblproductconfigoptions SET hidden = 0 WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$configOptionId]);
-        $pdo->commit();
+        Capsule::table('tblproductconfigoptionssub')->where('id', $configOptionSubId)->update([
+            'hidden' => 1,
+        ]);
     }
 
-    public static function hideConfigOptionSub($configOptionSubId)
+    public static function unHideConfigOptionSub(int $configOptionSubId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "UPDATE tblproductconfigoptionssub SET hidden = 1 WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$configOptionSubId]);
-        $pdo->commit();
-    }
-
-    public static function unHideConfigOptionSub($configOptionSubId)
-    {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "UPDATE tblproductconfigoptionssub SET hidden = 0 WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$configOptionSubId]);
-        $pdo->commit();
-    }
-
-    public static function getProductModule($productId)
-    {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT servertype FROM tblproducts WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["servertype"]) || empty($row["servertype"])) {
-            return false;
-        }
-
-        return $row["servertype"];
+        Capsule::table('tblproductconfigoptionssub')->where('id', $configOptionSubId)->update([
+            'hidden' => 0,
+        ]);
     }
 
     public static function getProductList(): array
@@ -378,188 +223,89 @@ class Helpers
         return self::toArray($data);
     }
 
-    public static function getConfigOptionList($configOptionGroupId)
+    public static function getConfigOptionList(int $configOptionGroupId)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblproductconfigoptions WHERE gid = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$configOptionGroupId]);
-        $rows = $statement->fetchAll();
-        $pdo->commit();
+        $data = Capsule::table('tblproductconfigoptions')->where('gid', $configOptionGroupId)->get()->toArray();
 
-        return $rows;
+        return self::toArray($data);
     }
 
-    public static function getConfigOptionSubList($configOptionId)
+    public static function getConfigOptionSubList(int $configOptionId)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblproductconfigoptionssub WHERE configid = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$configOptionId]);
-        $rows = $statement->fetchAll();
-        $pdo->commit();
+        $data = Capsule::table('tblproductconfigoptionssub')->where('configid', $configOptionId)->get()->toArray();
 
-        return $rows;
+        return self::toArray($data);
     }
 
-    public static function getConfigOptionsGroupId($productId)
+    public static function getConfigOptionsGroupId(int $productId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT tblproductconfiggroups.id FROM tblproductconfiggroups INNER JOIN tblproductconfiglinks ON tblproductconfiggroups.id = tblproductconfiglinks.gid WHERE tblproductconfiggroups.name LIKE '%Hivelocity%' AND tblproductconfiglinks.pid = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        }
-
-        return $row["id"];
+        return Capsule::table('tblproductconfiggroups')->where('tblproductconfiggroups.name', 'LIKE', '%Hivelocity%')
+                ->join('tblproductconfiglinks', function ($join) use ($productId) {
+                    $join->on('tblproductconfiggroups.id', '=', 'tblproductconfiglinks.gid')
+                        ->where('tblproductconfiglinks.pid', $productId);
+                })->where('tblproductconfiglinks.pid', $productId)->select('tblproductconfiggroups.id')
+                ->first()->id ?? false;
     }
 
-    public static function createConfigOptionsGroup($productId)
+    public static function createConfigOptionsGroup(int $productId)
     {
-        $productId = intval($productId);
-
         $productName = self::getProductName($productId);
         $productName = htmlspecialchars_decode($productName, ENT_QUOTES);
 
         $name = "Configurable options for $productName product - Auto generated by module Hivelocity Bare-Metal";
         $name = htmlspecialchars($name, ENT_QUOTES);
 
-        $pdo = Manager::connection()->getPdo();
-
-        $pdo->beginTransaction();
-        $query = "INSERT INTO tblproductconfiggroups (name) VALUES (?)";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$name]);
-        $pdo->commit();
-
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblproductconfiggroups WHERE name = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$name]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        }
-
-        return $row["id"];
+        return Capsule::table('tblproductconfiggroups')->insertGetId([
+            'name' => $name
+        ]);
     }
 
-    public static function getConfigOptionsLinkId($productId, $groupId)
+    public static function getConfigOptionsLinkId(int $productId, int $groupId)
     {
-        $productId = intval($productId);
-        $groupId = intval($groupId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblproductconfiglinks WHERE gid = ? AND pid = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$groupId, $productId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        }
-
-        return $row["id"];
+        return Capsule::table('tblproductconfiglinks')->where('gid', $groupId)->where('pid', $productId)
+                ->first()->id ?? false;
     }
 
-    public static function createConfigOptionsLink($productId, $groupId)
+    public static function createConfigOptionsLink(int $productId, int $groupId)
     {
-        $productId = intval($productId);
-        $groupId = intval($groupId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO tblproductconfiglinks (gid, pid) VALUES (?, ?)";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$groupId, $productId]);
-        $pdo->commit();
+        Capsule::table('tblproductconfiglinks')->insert([
+            'gid' => $groupId,
+            'pid' => $productId,
+        ]);
     }
 
-    public static function getConfigOptionId($groupId, $name)
+    public static function getConfigOptionId(int $groupId, string $name)
     {
-        $groupId = intval($groupId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblproductconfigoptions WHERE gid = ? AND optionname = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$groupId, $name]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        }
-
-        return $row["id"];
+        return Capsule::table('tblproductconfigoptions')->where('gid', $groupId)->where('optionname', $name)
+                ->first()->id ?? false;
     }
 
-    public static function createConfigOption($groupId, $name)
+    public static function createConfigOption(int $groupId, string $name)
     {
-        $groupId = intval($groupId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO tblproductconfigoptions (gid, optionname, optiontype) VALUES (?, ?, 1)";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$groupId, $name]);
-        $pdo->commit();
+        Capsule::table('tblproductconfigoptions')->insert([
+            'gid' => $groupId,
+            'optionname' => $name,
+            'optiontype' => 1,
+        ]);
     }
 
-    public static function getConfigOptionSubId($optionId, $name)
+    public static function getConfigOptionSubId(int $optionId, string $name)
     {
-        $optionId = intval($optionId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblproductconfigoptionssub WHERE configid = ? AND optionname = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$optionId, $name]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        }
-
-        return $row["id"];
+        return Capsule::table('tblproductconfigoptionssub')->where('configid', $optionId)->where('optionname', $name)
+                ->first()->id ?? false;
     }
 
     public static function createConfigOptionSub(int $optionId, string $name)
     {
-        $optionId = intval($optionId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO tblproductconfigoptionssub (configid, optionname) VALUES (?, ?)";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$optionId, $name]);
-        $pdo->commit();
+        Capsule::table('tblproductconfigoptionssub')->insert([
+            'configid' => $optionId,
+            'optionname' => $name,
+        ]);
     }
 
-    public static function clearConfigOptionSub($optionId)
+    public static function clearConfigOptionSub(int $optionId)
     {
-        $optionId = intval($optionId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "DELETE FROM tblproductconfigoptionssub WHERE configid = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$optionId]);
-        $pdo->commit();
+        Capsule::table('tblproductconfigoptionssub')->where('configid', $optionId)->delete();
     }
 
     public static function createConfigOptions($productId, $remoteProductId)
@@ -590,7 +336,7 @@ class Helpers
         $currencyId = Helpers::getCurrencyId("USD");
 
         if ($currencyId == false) {
-            throw new \Exception("Currency 'USD' Not Configured");
+            throw new Exception("Currency 'USD' Not Configured");
         }
 
         $processedOptions = [];
@@ -765,7 +511,7 @@ class Helpers
         return;
     }
 
-    public static function filterProductOptions($productOptions)
+    public static function filterProductOptions($productOptions): array
     {
         $expectedOptions = [
             "Control Panel",
@@ -791,240 +537,43 @@ class Helpers
         return $filteredOptions;
     }
 
-    public static function setConfigOptionPrice($optionSubId, $price, $currencyId)
+    public static function setConfigOptionPrice(int $optionSubId, $price, int $currencyId)
     {
-        $optionSubId = intval($optionSubId);
-        $currencyId = intval($currencyId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblpricing WHERE type = 'configoptions' AND relid = ? AND currency = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$optionSubId, $currencyId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["id"]) && !empty($row["id"])) {
-            $priceId = $row["id"];
-            $pdo->beginTransaction();
-            $query = "UPDATE tblpricing SET monthly = ? WHERE id = ?";
-            $statement = $pdo->prepare($query);
-            $statement->execute([$price, $priceId]);
-            $pdo->commit();
-        } else {
-            $pdo = Manager::connection()->getPdo();
-            $pdo->beginTransaction();
-            $query = "INSERT INTO tblpricing (type, currency, relid, msetupfee, monthly) VALUES ('configoptions', ?, ?, 0, ?)";
-            $statement = $pdo->prepare($query);
-            $statement->execute([$currencyId, $optionSubId, $price]);
-            $pdo->commit();
-        }
+        Capsule::table('tblpricing')->updateOrInsert([
+            'type' => 'configoptions',
+            'relid' => $optionSubId,
+            'currency' => $currencyId,
+        ], [
+            'monthly' => $price,
+            'msetupfee' => 0,
+        ]);
     }
 
     public static function setProductPrice(int $productId, $price, int $currencyId)
     {
-        $pricing = Capsule::table('tblpricing')->where('type', 'product')->where('relid', $productId)
-            ->where('currency', $currencyId)->select('id')->first();
-
-        if ($pricing->id) {
-            Capsule::table('tblpricing')->where('id', $pricing->id)->update([
-                'monthly' => $price
-            ]);
-        } else {
-            Capsule::table('tblpricing')->insert([
-                'type' => 'product',
-                'currency' => $currencyId,
-                'relid' => $productId,
-                'monthly' => $price,
-            ]);
-        }
-    }
-
-    public static function getLastServiceId($userId)
-    {
-        $userId = intval($userId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblhosting WHERE userid = ? ORDER BY id DESC";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$userId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["id"]) && !empty($row["id"])) {
-            return $row["id"];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getProductIdByServiceId($serviceId)
-    {
-        $serviceId = intval($serviceId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT packageid FROM tblhosting WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$serviceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["packageid"]) && !empty($row["packageid"])) {
-            return $row["packageid"];
-        } else {
-            return false;
-        }
+        Capsule::table('tblpricing')->updateOrInsert([
+            'type' => 'product',
+            'relid' => $productId,
+            'currency' => $currencyId,
+        ],[
+            'monthly' => $price
+        ]);
     }
 
     public static function getProductIdByRemoteProductId($remoteProductId)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblproducts WHERE configoption1 = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$remoteProductId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["id"]) || empty($row["id"])) {
-            return false;
-        } else {
-            return $row["id"];
-        }
+        return Capsule::table('tblproducts')->where('configoption1', $remoteProductId)->select('id')
+                ->first()->id ?? false;
     }
 
-    public static function getProductName($productId)
+    public static function getProductName(int $productId)
     {
-        $productId = intval($productId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT name FROM tblproducts WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (!isset($row["name"]) || empty($row["name"])) {
-            return false;
-        }
-
-        return $row["name"];
-    }
-
-    public static function isDeviceAssigned($deviceId)
-    {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT tblcustomfieldsvalues.id " . "FROM tblcustomfieldsvalues " . "INNER JOIN tblcustomfields " . "ON tblcustomfieldsvalues.fieldid = tblcustomfields.id " . "INNER JOIN tblproducts " . "ON tblcustomfields.relid = tblproducts.id " . "WHERE tblcustomfields.fieldname LIKE 'hivelocityDeviceId%' AND tblcustomfieldsvalues.value = ?";
-
-        $statement = $pdo->prepare($query);
-        $statement->execute([$deviceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["id"]) && !empty($row["id"])) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static function getAssignedDeviceId($serviceId)
-    {
-        $serviceId = intval($serviceId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT tblcustomfieldsvalues.value " . "FROM tblcustomfieldsvalues " . "INNER JOIN tblcustomfields " . "ON tblcustomfieldsvalues.fieldid = tblcustomfields.id " . "WHERE tblcustomfields.fieldname LIKE 'hivelocityDeviceId%' AND tblcustomfieldsvalues.relid = ?";
-
-        $statement = $pdo->prepare($query);
-        $statement->execute([$serviceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["value"]) && !empty($row["value"])) {
-            return $row["value"];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getServiceIdByAssignedDeviceId($deviceId)
-    {
-        $deviceId = intval($deviceId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT tblcustomfieldsvalues.relid " . "FROM tblcustomfieldsvalues " . "INNER JOIN tblcustomfields " . "ON tblcustomfieldsvalues.fieldid = tblcustomfields.id " . "WHERE tblcustomfields.fieldname LIKE 'hivelocityDeviceId%' AND tblcustomfieldsvalues.value = ?";
-
-        $statement = $pdo->prepare($query);
-        $statement->execute([$deviceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["relid"]) && !empty($row["relid"])) {
-            return $row["relid"];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getServiceDomain($serviceId)
-    {
-        $serviceId = intval($serviceId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT domain FROM tblhosting WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$serviceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["domain"]) && !empty($row["domain"])) {
-            return $row["domain"];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getUserIdByServiceId($serviceId)
-    {
-        $serviceId = intval($serviceId);
-
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT userid FROM tblhosting WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$serviceId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["userid"]) && !empty($row["userid"])) {
-            return $row["userid"];
-        } else {
-            return false;
-        }
+        return Capsule::table('tblproducts')->where('id', $productId)->select('name')->first()->name ?? false;
     }
 
     public static function getCurrencyId($currencyCode)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblcurrencies WHERE code = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$currencyCode]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["id"]) && !empty($row["id"])) {
-            return $row["id"];
-        } else {
-            return false;
-        }
+        return Capsule::table('tblcurrencies')->where('code', $currencyCode)->select('id')->first()->id ?? false;
     }
 
     public static function getCurrencyRate($currencyCode)
@@ -1041,19 +590,8 @@ class Helpers
 
     public static function getProductPrice($productId, $currencyId)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT monthly FROM tblpricing WHERE type = 'product' AND relid = ? AND currency = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId, $currencyId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["monthly"])) {
-            return $row["monthly"];
-        } else {
-            return false;
-        }
+        return Capsule::table('tblpricing')->where('type', 'product')->where('relid', $productId)
+                ->where('currency', $currencyId)->select('monthly')->first()->monthly ?? false;
     }
 
     public static function toArray(array $data): array

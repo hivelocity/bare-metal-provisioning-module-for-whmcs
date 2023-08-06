@@ -61,7 +61,7 @@ class Cron
 
     public static function synchronizeProducts()
     {
-        $addonConfig = Helpers::getAdonConfig();
+        $addonConfig = Helpers::getAddonConfig();
         $serverGroupId = $addonConfig["serverGroup"];
         $productGroupId = $addonConfig["productGroup"];
 
@@ -87,11 +87,6 @@ class Cron
                     $remoteProductList[$remoteProductId] = $remoteProductData;
                 }
             }
-        }
-
-        $currencyList = Helpers::getCurrencyList();
-        foreach ($currencyList as $currency) {
-            $currencyId = $currency["id"];
         }
 
         $processedProducts = [];
@@ -173,7 +168,7 @@ class Cron
             $localProductId = $localProductData['id'];
 
             if (in_array($localProductId, $processedProducts)) {
-                Helpers::unhideProduct($localProductId);
+                Helpers::unHideProduct($localProductId);
             } else {
                 Helpers::hideProduct($localProductId);
             }
