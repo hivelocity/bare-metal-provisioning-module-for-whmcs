@@ -62,7 +62,7 @@ class Addon
         ];
     }
 
-    public static function output($params)
+    public static function output()
     {
         $cronDisable = '';
 
@@ -117,18 +117,9 @@ class Addon
             $error = $e->getMessage();
         }
 
-        $currencyList = Helpers::getCurrencyList();
-
+        $smartyVarsProductList = [];
         $smartyVarsCurrencyList = [];
 
-        foreach ($currencyList as $currencyData) {
-            $smartyVarsCurrencyList[$currencyData["id"]] = [
-                "code" => $currencyData["code"],
-                "suffix" => $currencyData["suffix"]
-            ];
-        }
-
-        $smartyVarsProductList = [];
 
         foreach ($productList as $productData) {
             $productId = $productData["id"];
@@ -145,7 +136,7 @@ class Addon
 
             $usdRate = Helpers::getCurrencyRate("USD");
 
-            if ($usdRate === false) {
+            if (!is_numeric($usdRate)) {
                 break;
             }
 
@@ -155,7 +146,14 @@ class Addon
                 "name" => $productData["name"]
             ];
 
+            $currencyList = Helpers::getCurrencyList();
+
             foreach ($currencyList as $currencyData) {
+                $smartyVarsCurrencyList[$currencyData["id"]] = [
+                    "code" => $currencyData["code"],
+                    "suffix" => $currencyData["suffix"]
+                ];
+
                 $currencyId = $currencyData["id"];
                 $productPrice = Helpers::getProductPrice($productId, $currencyId);
 
