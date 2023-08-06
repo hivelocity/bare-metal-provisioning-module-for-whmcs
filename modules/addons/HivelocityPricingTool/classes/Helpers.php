@@ -2,7 +2,8 @@
 
 namespace HivelocityPricingTool\classes;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\Capsule\Manager;
+use WHMCS\Database\Capsule;
 
 class Helpers
 {
@@ -14,7 +15,7 @@ class Helpers
 
     static public function getAdonConfig()
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT * FROM tbladdonmodules WHERE module = 'HivelocityPricingTool'";
         $statement = $pdo->prepare($query);
@@ -33,7 +34,7 @@ class Helpers
 
     static public function isNotificationEnabled()
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT value FROM tbladdonmodules WHERE module = 'HivelocityPricingTool' AND setting = 'priceNotification'";
         $statement = $pdo->prepare($query);
@@ -50,7 +51,7 @@ class Helpers
 
     static public function saveHivelocityProductPrice($hivelocityProductId, $hivelocityProductPrice)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO HivelocityProductPrices (hivelocityProductId, hivelocityProductPrice) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityProductPrice = ?;";
         $statement = $pdo->prepare($query);
@@ -60,7 +61,7 @@ class Helpers
 
     static public function getHivelocityProductPrice($hivelocityProductId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT hivelocityProductPrice FROM HivelocityProductPrices WHERE hivelocityProductId = ?";
         $statement = $pdo->prepare($query);
@@ -77,7 +78,7 @@ class Helpers
 
     static public function saveHivelocityDeploymentCorrelation($whmcsServiceId, $hivelocityDeploymentId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO HivelocityDeploymentCorrelation (whmcsServiceId, hivelocityDeploymentId) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityDeploymentId = ?;";
         $statement = $pdo->prepare($query);
@@ -87,7 +88,7 @@ class Helpers
 
     static public function getHivelocityDeploymentCorrelation($whmcsServiceId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT hivelocityDeploymentId FROM HivelocityDeploymentCorrelation WHERE whmcsServiceId = ?";
         $statement = $pdo->prepare($query);
@@ -104,7 +105,7 @@ class Helpers
 
     static public function saveHivelocityServiceCorrelation($whmcsServiceId, $hivelocityServiceId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO HivelocityServiceCorrelation (whmcsServiceId, hivelocityServiceId) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityServiceId = ?;";
         $statement = $pdo->prepare($query);
@@ -114,7 +115,7 @@ class Helpers
 
     static public function getHivelocityServiceCorrelation($whmcsServiceId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT hivelocityServiceId FROM HivelocityServiceCorrelation WHERE whmcsServiceId = ?";
         $statement = $pdo->prepare($query);
@@ -131,7 +132,7 @@ class Helpers
 
     static public function saveHivelocityDeviceCorrelation($whmcsServiceId, $hivelocityDeviceId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO HivelocityDeviceCorrelation (whmcsServiceId, hivelocityDevicetId) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityDevicetId = ?;";
         $statement = $pdo->prepare($query);
@@ -141,7 +142,7 @@ class Helpers
 
     static public function getHivelocityDeviceCorrelation($whmcsServiceId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT hivelocityDevicetId FROM HivelocityDeviceCorrelation WHERE whmcsServiceId = ?";
         $statement = $pdo->prepare($query);
@@ -230,7 +231,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
 
         $pdo->beginTransaction();
         $query = "SELECT servergroup FROM tblproducts WHERE id = ?";
@@ -252,7 +253,7 @@ class Helpers
     {
         $serverGroupId = intval($serverGroupId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
 
         $pdo->beginTransaction();
         $query = "SELECT serverid FROM tblservergroupsrel WHERE groupid = ?";
@@ -281,25 +282,17 @@ class Helpers
         }
     }
 
-    static public function getServerGroupList()
+
+    static public function getServerGroupList(): array
     {
-        $pdo = Capsule::connection()->getPdo();
-
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblservergroups";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $rows = $statement->fetchAll();
-        $pdo->commit();
-
-        return $rows;
+        return Capsule::table('tblservergroups')->get()->toArray() ?? [];
     }
 
     static public function getProductCustomFieldId($productId)
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblcustomfields WHERE type = 'product' AND relid = '$productId' AND fieldname LIKE 'hivelocityDeviceId%'";
         $statement = $pdo->prepare($query);
@@ -318,7 +311,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly) VALUES ('product', $productId, 'hivelocityDeviceId|Device ID', 'text', 'on')";
         $statement = $pdo->prepare($query);
@@ -330,7 +323,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "UPDATE tblproducts SET hidden = 1 WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -342,7 +335,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "UPDATE tblproducts SET hidden = 0 WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -354,7 +347,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "UPDATE tblproductconfigoptions SET hidden = 1 WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -366,7 +359,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "UPDATE tblproductconfigoptions SET hidden = 0 WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -378,7 +371,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "UPDATE tblproductconfigoptionssub SET hidden = 1 WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -390,7 +383,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "UPDATE tblproductconfigoptionssub SET hidden = 0 WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -402,7 +395,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT servertype FROM tblproducts WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -419,7 +412,7 @@ class Helpers
 
     static public function getProductList()
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT * FROM tblproducts WHERE servertype = 'Hivelocity'";
         $statement = $pdo->prepare($query);
@@ -430,22 +423,14 @@ class Helpers
         return $rows;
     }
 
-    static public function getProductGroupList()
+    static public function getProductGroupList(): array
     {
-        $pdo = Capsule::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblproductgroups";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $rows = $statement->fetchAll();
-        $pdo->commit();
-
-        return $rows;
+        return Capsule::table('tblproductgroups')->get()->toArray() ?? [];
     }
 
     static public function getConfigOptionList($configOptionGroupId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT * FROM tblproductconfigoptions WHERE gid = ?";
         $statement = $pdo->prepare($query);
@@ -458,7 +443,7 @@ class Helpers
 
     static public function getConfigOptionSubList($configOptionId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT * FROM tblproductconfigoptionssub WHERE configid = ?";
         $statement = $pdo->prepare($query);
@@ -473,7 +458,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT tblproductconfiggroups.id FROM tblproductconfiggroups INNER JOIN tblproductconfiglinks ON tblproductconfiggroups.id = tblproductconfiglinks.gid WHERE tblproductconfiggroups.name LIKE '%Hivelocity%' AND tblproductconfiglinks.pid = ?";
         $statement = $pdo->prepare($query);
@@ -498,7 +483,7 @@ class Helpers
         $name = "Configurable options for $productName product - Auto generated by module Hivelocity Bare-Metal";
         $name = htmlspecialchars($name, ENT_QUOTES);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
 
         $pdo->beginTransaction();
         $query = "INSERT INTO tblproductconfiggroups (name) VALUES (?)";
@@ -525,7 +510,7 @@ class Helpers
         $productId = intval($productId);
         $groupId = intval($groupId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblproductconfiglinks WHERE gid = ? AND pid = ?";
         $statement = $pdo->prepare($query);
@@ -545,7 +530,7 @@ class Helpers
         $productId = intval($productId);
         $groupId = intval($groupId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO tblproductconfiglinks (gid, pid) VALUES (?, ?)";
         $statement = $pdo->prepare($query);
@@ -557,7 +542,7 @@ class Helpers
     {
         $groupId = intval($groupId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblproductconfigoptions WHERE gid = ? AND optionname = ?";
         $statement = $pdo->prepare($query);
@@ -576,7 +561,7 @@ class Helpers
     {
         $groupId = intval($groupId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO tblproductconfigoptions (gid, optionname, optiontype) VALUES (?, ?, 1)";
         $statement = $pdo->prepare($query);
@@ -588,7 +573,7 @@ class Helpers
     {
         $optionId = intval($optionId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblproductconfigoptionssub WHERE configid = ? AND optionname = ?";
         $statement = $pdo->prepare($query);
@@ -607,7 +592,7 @@ class Helpers
     {
         $optionId = intval($optionId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "INSERT INTO tblproductconfigoptionssub (configid, optionname) VALUES (?, ?)";
         $statement = $pdo->prepare($query);
@@ -619,7 +604,7 @@ class Helpers
     {
         $optionId = intval($optionId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "DELETE FROM tblproductconfigoptionssub WHERE configid = ?";
         $statement = $pdo->prepare($query);
@@ -863,7 +848,7 @@ class Helpers
         $optionSubId = intval($optionSubId);
         $currencyId = intval($currencyId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblpricing WHERE type = 'configoptions' AND relid = ? AND currency = ?";
         $statement = $pdo->prepare($query);
@@ -879,7 +864,7 @@ class Helpers
             $statement->execute([$price, $priceId]);
             $pdo->commit();
         } else {
-            $pdo = Capsule::connection()->getPdo();
+            $pdo = Manager::connection()->getPdo();
             $pdo->beginTransaction();
             $query = "INSERT INTO tblpricing (type, currency, relid, msetupfee, monthly) VALUES ('configoptions', ?, ?, 0, ?)";
             $statement = $pdo->prepare($query);
@@ -893,7 +878,7 @@ class Helpers
         $productId = intval($productId);
         $currencyId = intval($currencyId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
 
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblpricing WHERE type = 'product' AND relid = ? AND currency = ?";
@@ -922,7 +907,7 @@ class Helpers
     {
         $userId = intval($userId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblhosting WHERE userid = ? ORDER BY id DESC";
         $statement = $pdo->prepare($query);
@@ -941,7 +926,7 @@ class Helpers
     {
         $serviceId = intval($serviceId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT packageid FROM tblhosting WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -958,7 +943,7 @@ class Helpers
 
     static public function getProductIdByRemoteProductId($remoteProductId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblproducts WHERE configoption1 = ?";
         $statement = $pdo->prepare($query);
@@ -977,7 +962,7 @@ class Helpers
     {
         $productId = intval($productId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT name FROM tblproducts WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -994,7 +979,7 @@ class Helpers
 
     static public function isDeviceAssigned($deviceId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT tblcustomfieldsvalues.id " . "FROM tblcustomfieldsvalues " . "INNER JOIN tblcustomfields " . "ON tblcustomfieldsvalues.fieldid = tblcustomfields.id " . "INNER JOIN tblproducts " . "ON tblcustomfields.relid = tblproducts.id " . "WHERE tblcustomfields.fieldname LIKE 'hivelocityDeviceId%' AND tblcustomfieldsvalues.value = ?";
 
@@ -1014,7 +999,7 @@ class Helpers
     {
         $serviceId = intval($serviceId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT tblcustomfieldsvalues.value " . "FROM tblcustomfieldsvalues " . "INNER JOIN tblcustomfields " . "ON tblcustomfieldsvalues.fieldid = tblcustomfields.id " . "WHERE tblcustomfields.fieldname LIKE 'hivelocityDeviceId%' AND tblcustomfieldsvalues.relid = ?";
 
@@ -1034,7 +1019,7 @@ class Helpers
     {
         $deviceId = intval($deviceId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT tblcustomfieldsvalues.relid " . "FROM tblcustomfieldsvalues " . "INNER JOIN tblcustomfields " . "ON tblcustomfieldsvalues.fieldid = tblcustomfields.id " . "WHERE tblcustomfields.fieldname LIKE 'hivelocityDeviceId%' AND tblcustomfieldsvalues.value = ?";
 
@@ -1054,7 +1039,7 @@ class Helpers
     {
         $serviceId = intval($serviceId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT domain FROM tblhosting WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -1073,7 +1058,7 @@ class Helpers
     {
         $serviceId = intval($serviceId);
 
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT userid FROM tblhosting WHERE id = ?";
         $statement = $pdo->prepare($query);
@@ -1090,7 +1075,7 @@ class Helpers
 
     static public function getCurrencyId($currencyCode)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT id FROM tblcurrencies WHERE code = ?";
         $statement = $pdo->prepare($query);
@@ -1107,7 +1092,7 @@ class Helpers
 
     static public function getCurrencyRate($currencyCode)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT rate FROM tblcurrencies WHERE code = ?";
         $statement = $pdo->prepare($query);
@@ -1124,7 +1109,7 @@ class Helpers
 
     static public function getCurrencyList()
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT * FROM tblcurrencies";
         $statement = $pdo->prepare($query);
@@ -1137,7 +1122,7 @@ class Helpers
 
     static public function getProductPrice($productId, $currencyId)
     {
-        $pdo = Capsule::connection()->getPdo();
+        $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
         $query = "SELECT monthly FROM tblpricing WHERE type = 'product' AND relid = ? AND currency = ?";
         $statement = $pdo->prepare($query);

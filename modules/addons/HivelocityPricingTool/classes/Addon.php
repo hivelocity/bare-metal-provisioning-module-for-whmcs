@@ -8,12 +8,12 @@ class Addon
 {
     static public function config()
     {
-        $serverGropupList = Helpers::getServerGroupList();
+        $serverGroupList = Helpers::getServerGroupList();
         $serverGroupOptions = [];
 
-        foreach ($serverGropupList as $serverGroupData) {
-            $serverGroupId = $serverGroupData["id"];
-            $serverGroupName = $serverGroupData["name"];
+        foreach ($serverGroupList as $serverGroupData) {
+            $serverGroupId = $serverGroupData->id;
+            $serverGroupName = $serverGroupData->name;
 
             $serverGroupOptions[$serverGroupId] = $serverGroupName;
         }
@@ -22,8 +22,8 @@ class Addon
         $productGropupOptions = [];
 
         foreach ($productGropupList as $productGroupData) {
-            $productGroupId = $productGroupData["id"];
-            $productGroupName = $productGroupData["name"];
+            $productGroupId = $productGroupData->id;
+            $productGroupName = $productGroupData->name;
 
             $productGropupOptions[$productGroupId] = $productGroupName;
         }
