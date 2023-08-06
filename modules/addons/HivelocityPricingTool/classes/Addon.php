@@ -78,6 +78,19 @@ class Addon
             $cronDisable = 'Please enable "shell_exec" function in your php.ini file.';
         }
 
+        $disabled = '';
+        $disabledMsg = '';
+
+        if ($_GET['action'] == 'generateproducts') {
+            Helpers::deleteRunFiveMinCron();
+            Helpers::createRunFiveMinCron();
+        }
+
+        if($_GET['action'] == 'generateproducts' || Helpers::isRunFiveMinCronExist()){
+            $disabled = 'disabled';
+            $disabledMsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
+        }
+
         if (isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {
             $action = $_POST["hivelocityPricingToolAction"];
         } else {
@@ -119,7 +132,6 @@ class Addon
 
         $smartyVarsProductList = [];
         $smartyVarsCurrencyList = [];
-
 
         foreach ($productList as $productData) {
             $productId = $productData["id"];
@@ -179,6 +191,8 @@ class Addon
         $smarty->assign('currencyList', $smartyVarsCurrencyList);
         $smarty->assign('success', $success);
         $smarty->assign('error', $error);
+        $smarty->assign('disabled', $disabled);
+        $smarty->assign('disabledmsg', $disabledMsg);
         $smarty->assign('crondisable', $cronDisable);
 
         $smarty->caching = false;
@@ -239,10 +253,6 @@ class Addon
                 $table->foreignId('whmcsServiceId')->index();
             });
         }
-
-        Capsule::table('mod_hivelocity_cron')->insert([
-            'value' => 'RunFiveMinCron',
-            'created_at' => date('Y-m-d h:i:s'),
-        ]);
+        Helpers::createRunFiveMinCron();
     }
 }

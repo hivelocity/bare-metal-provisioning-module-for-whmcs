@@ -13,6 +13,24 @@ class Helpers
         logmodulecall("HivelocityPricingTool Debug Log", $desc, $data, "", "");
     }
 
+    public static function isRunFiveMinCronExist(): bool
+    {
+        return (bool) Capsule::table('mod_hivelocity_cron')->where('value', 'RunFiveMinCron')->first();
+    }
+
+    public static function deleteRunFiveMinCron()
+    {
+        Capsule::table('mod_hivelocity_cron')->where('value', 'RunFiveMinCron')->delete();
+    }
+
+    public static function createRunFiveMinCron()
+    {
+        Capsule::table('mod_hivelocity_cron')->insert([
+            'value' => 'RunFiveMinCron',
+            'created_at' => date('Y-m-d h:i:s'),
+        ]);
+    }
+
     public static function getAddonConfig(): array
     {
         $configs = Capsule::table('tbladdonmodules')->where('module', 'HivelocityPricingTool')->get();

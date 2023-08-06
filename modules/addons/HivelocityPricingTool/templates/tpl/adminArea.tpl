@@ -29,7 +29,18 @@
             <td>
                 <button type="button" id = "saveButton" class = "btn btn-primary" style = "margin-left:20px">Save</button>
             </td>
+            <td>
+                &nbsp;&nbsp;<a {if !$disabled} href="/admin/addonmodules.php?module=HivelocityPricingTool&action=generateproducts" {/if} class="btn btn-primary" {$disabled}>Sync Products</a>
+            </td>
         </tr>
+        {if $disabledmsg}
+            <tr>
+                <td colspan=4><br>
+                    <div class="alert alert-info">{$disabledmsg}</div>
+                </td>
+
+            </tr>
+        {/if}
         {if $crondisable}
             <tr>
                 <td colspan=4><br>
