@@ -8,12 +8,12 @@ use WHMCS\Database\Capsule;
 class Helpers
 {
 
-    static public function debugLog($desc, $data)
+    public static function debugLog($desc, $data)
     {
         logmodulecall("HivelocityPricingTool Debug Log", $desc, $data, "", "");
     }
 
-    static public function getAdonConfig()
+    public static function getAdonConfig()
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -32,7 +32,7 @@ class Helpers
         return $addonConfig;
     }
 
-    static public function isNotificationEnabled()
+    public static function isNotificationEnabled()
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -49,7 +49,7 @@ class Helpers
         }
     }
 
-    static public function saveHivelocityProductPrice($hivelocityProductId, $hivelocityProductPrice)
+    public static function saveHivelocityProductPrice($hivelocityProductId, $hivelocityProductPrice)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -59,24 +59,13 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getHivelocityProductPrice($hivelocityProductId)
+    public static function getHivelocityProductPrice($hivelocityProductId)
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT hivelocityProductPrice FROM HivelocityProductPrices WHERE hivelocityProductId = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$hivelocityProductId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["hivelocityProductPrice"])) {
-            return $row["hivelocityProductPrice"];
-        } else {
-            return false;
-        }
+        return Capsule::table('HivelocityProductPrices')->where('hivelocityProductId', $hivelocityProductId)
+                ->first()->hivelocityProductPrice ?? false;
     }
 
-    static public function saveHivelocityDeploymentCorrelation($whmcsServiceId, $hivelocityDeploymentId)
+    public static function saveHivelocityDeploymentCorrelation($whmcsServiceId, $hivelocityDeploymentId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -86,7 +75,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getHivelocityDeploymentCorrelation($whmcsServiceId)
+    public static function getHivelocityDeploymentCorrelation($whmcsServiceId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -103,7 +92,7 @@ class Helpers
         }
     }
 
-    static public function saveHivelocityServiceCorrelation($whmcsServiceId, $hivelocityServiceId)
+    public static function saveHivelocityServiceCorrelation($whmcsServiceId, $hivelocityServiceId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -113,7 +102,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getHivelocityServiceCorrelation($whmcsServiceId)
+    public static function getHivelocityServiceCorrelation($whmcsServiceId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -130,7 +119,7 @@ class Helpers
         }
     }
 
-    static public function saveHivelocityDeviceCorrelation($whmcsServiceId, $hivelocityDeviceId)
+    public static function saveHivelocityDeviceCorrelation($whmcsServiceId, $hivelocityDeviceId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -140,7 +129,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getHivelocityDeviceCorrelation($whmcsServiceId)
+    public static function getHivelocityDeviceCorrelation($whmcsServiceId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -157,7 +146,7 @@ class Helpers
         }
     }
 
-    static public function getLocationName($locationId)
+    public static function getLocationName($locationId)
     {
         $temp = explode("-", $locationId);
 
@@ -227,7 +216,7 @@ class Helpers
         return $locationName;
     }
 
-    static public function getServerConfigByProductId($productId)
+    public static function getServerConfigByProductId($productId)
     {
         $productId = intval($productId);
 
@@ -249,7 +238,7 @@ class Helpers
         return self::getServerConfigByServerGroupId($serverGroupId);
     }
 
-    static public function getServerConfigByServerGroupId($serverGroupId)
+    public static function getServerConfigByServerGroupId($serverGroupId)
     {
         $serverGroupId = intval($serverGroupId);
 
@@ -282,13 +271,12 @@ class Helpers
         }
     }
 
-
-    static public function getServerGroupList(): array
+    public static function getServerGroupList(): array
     {
         return Capsule::table('tblservergroups')->get()->toArray() ?? [];
     }
 
-    static public function getProductCustomFieldId($productId)
+    public static function getProductCustomFieldId($productId)
     {
         $productId = intval($productId);
 
@@ -307,7 +295,7 @@ class Helpers
         return $row["id"];
     }
 
-    static public function addProductCustomField($productId)
+    public static function addProductCustomField($productId)
     {
         $productId = intval($productId);
 
@@ -319,7 +307,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function hideProduct($productId)
+    public static function hideProduct($productId)
     {
         $productId = intval($productId);
 
@@ -331,7 +319,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function unhideProduct($productId)
+    public static function unhideProduct($productId)
     {
         $productId = intval($productId);
 
@@ -343,7 +331,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function hideConfigOption($configOptionId)
+    public static function hideConfigOption($configOptionId)
     {
         $productId = intval($productId);
 
@@ -355,7 +343,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function unHideConfigOption($configOptionId)
+    public static function unHideConfigOption($configOptionId)
     {
         $productId = intval($productId);
 
@@ -367,7 +355,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function hideConfigOptionSub($configOptionSubId)
+    public static function hideConfigOptionSub($configOptionSubId)
     {
         $productId = intval($productId);
 
@@ -379,7 +367,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function unHideConfigOptionSub($configOptionSubId)
+    public static function unHideConfigOptionSub($configOptionSubId)
     {
         $productId = intval($productId);
 
@@ -391,7 +379,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getProductModule($productId)
+    public static function getProductModule($productId)
     {
         $productId = intval($productId);
 
@@ -410,17 +398,17 @@ class Helpers
         return $row["servertype"];
     }
 
-    static public function getProductList(): array
+    public static function getProductList(): array
     {
         return Capsule::table('tblproducts')->where('servertype', 'Hivelocity')->get()->toArray() ?? [];
     }
 
-    static public function getProductGroupList(): array
+    public static function getProductGroupList(): array
     {
         return Capsule::table('tblproductgroups')->get()->toArray() ?? [];
     }
 
-    static public function getConfigOptionList($configOptionGroupId)
+    public static function getConfigOptionList($configOptionGroupId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -433,7 +421,7 @@ class Helpers
         return $rows;
     }
 
-    static public function getConfigOptionSubList($configOptionId)
+    public static function getConfigOptionSubList($configOptionId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -446,7 +434,7 @@ class Helpers
         return $rows;
     }
 
-    static public function getConfigOptionsGroupId($productId)
+    public static function getConfigOptionsGroupId($productId)
     {
         $productId = intval($productId);
 
@@ -465,7 +453,7 @@ class Helpers
         return $row["id"];
     }
 
-    static public function createConfigOptionsGroup($productId)
+    public static function createConfigOptionsGroup($productId)
     {
         $productId = intval($productId);
 
@@ -497,7 +485,7 @@ class Helpers
         return $row["id"];
     }
 
-    static public function getConfigOptionsLinkId($productId, $groupId)
+    public static function getConfigOptionsLinkId($productId, $groupId)
     {
         $productId = intval($productId);
         $groupId = intval($groupId);
@@ -517,7 +505,7 @@ class Helpers
         return $row["id"];
     }
 
-    static public function createConfigOptionsLink($productId, $groupId)
+    public static function createConfigOptionsLink($productId, $groupId)
     {
         $productId = intval($productId);
         $groupId = intval($groupId);
@@ -530,7 +518,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getConfigOptionId($groupId, $name)
+    public static function getConfigOptionId($groupId, $name)
     {
         $groupId = intval($groupId);
 
@@ -549,7 +537,7 @@ class Helpers
         return $row["id"];
     }
 
-    static public function createConfigOption($groupId, $name)
+    public static function createConfigOption($groupId, $name)
     {
         $groupId = intval($groupId);
 
@@ -561,7 +549,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function getConfigOptionSubId($optionId, $name)
+    public static function getConfigOptionSubId($optionId, $name)
     {
         $optionId = intval($optionId);
 
@@ -580,7 +568,7 @@ class Helpers
         return $row["id"];
     }
 
-    static public function createConfigOptionSub($optionId, $name)
+    public static function createConfigOptionSub($optionId, $name)
     {
         $optionId = intval($optionId);
 
@@ -592,7 +580,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function clearConfigOptionSub($optionId)
+    public static function clearConfigOptionSub($optionId)
     {
         $optionId = intval($optionId);
 
@@ -604,7 +592,7 @@ class Helpers
         $pdo->commit();
     }
 
-    static public function createConfigOptions($productId, $remoteProductId)
+    public static function createConfigOptions($productId, $remoteProductId)
     {
         $serverConfig = Helpers::getServerConfigByProductId($productId);
         $apiUrl = $serverConfig["hostname"];
@@ -809,7 +797,7 @@ class Helpers
         return;
     }
 
-    static public function filterProductOptions($productOptions)
+    public static function filterProductOptions($productOptions)
     {
         $expectedOptions = [
             "Control Panel",
@@ -835,7 +823,7 @@ class Helpers
         return $filteredOptions;
     }
 
-    static public function setConfigOptionPrice($optionSubId, $price, $currencyId)
+    public static function setConfigOptionPrice($optionSubId, $price, $currencyId)
     {
         $optionSubId = intval($optionSubId);
         $currencyId = intval($currencyId);
@@ -865,37 +853,26 @@ class Helpers
         }
     }
 
-    static public function setProductPrice($productId, $price, $currencyId)
+    public static function setProductPrice(int $productId, $price, int $currencyId)
     {
-        $productId = intval($productId);
-        $currencyId = intval($currencyId);
+        $pricing = Capsule::table('tblpricing')->where('type', 'product')->where('relid', $productId)
+            ->where('currency', $currencyId)->select('id')->first();
 
-        $pdo = Manager::connection()->getPdo();
-
-        $pdo->beginTransaction();
-        $query = "SELECT id FROM tblpricing WHERE type = 'product' AND relid = ? AND currency = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId, $currencyId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["id"])) {
-            $priceId = $row["id"];
-            $pdo->beginTransaction();
-            $query = "UPDATE tblpricing SET monthly = ? WHERE id = ?";
-            $statement = $pdo->prepare($query);
-            $statement->execute([$price, $priceId]);
-            $pdo->commit();
+        if ($pricing->id) {
+            $pricing->update([
+                'monthly' => $price
+            ]);
         } else {
-            $pdo->beginTransaction();
-            $query = "INSERT INTO tblpricing (type, currency, relid, monthly) VALUES ('product', ?, ?, ?)";
-            $statement = $pdo->prepare($query);
-            $statement->execute([$currencyId, $productId, $price]);
-            $pdo->commit();
+            Capsule::table('tblpricing')->insert([
+                'type' => 'product',
+                'currency' => $currencyId,
+                'relid' => $productId,
+                'monthly' => $price,
+            ]);
         }
     }
 
-    static public function getLastServiceId($userId)
+    public static function getLastServiceId($userId)
     {
         $userId = intval($userId);
 
@@ -914,7 +891,7 @@ class Helpers
         }
     }
 
-    static public function getProductIdByServiceId($serviceId)
+    public static function getProductIdByServiceId($serviceId)
     {
         $serviceId = intval($serviceId);
 
@@ -933,7 +910,7 @@ class Helpers
         }
     }
 
-    static public function getProductIdByRemoteProductId($remoteProductId)
+    public static function getProductIdByRemoteProductId($remoteProductId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -950,7 +927,7 @@ class Helpers
         }
     }
 
-    static public function getProductName($productId)
+    public static function getProductName($productId)
     {
         $productId = intval($productId);
 
@@ -969,7 +946,7 @@ class Helpers
         return $row["name"];
     }
 
-    static public function isDeviceAssigned($deviceId)
+    public static function isDeviceAssigned($deviceId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -987,7 +964,7 @@ class Helpers
         }
     }
 
-    static public function getAssignedDeviceId($serviceId)
+    public static function getAssignedDeviceId($serviceId)
     {
         $serviceId = intval($serviceId);
 
@@ -1007,7 +984,7 @@ class Helpers
         }
     }
 
-    static public function getServiceIdByAssignedDeviceId($deviceId)
+    public static function getServiceIdByAssignedDeviceId($deviceId)
     {
         $deviceId = intval($deviceId);
 
@@ -1027,7 +1004,7 @@ class Helpers
         }
     }
 
-    static public function getServiceDomain($serviceId)
+    public static function getServiceDomain($serviceId)
     {
         $serviceId = intval($serviceId);
 
@@ -1046,7 +1023,7 @@ class Helpers
         }
     }
 
-    static public function getUserIdByServiceId($serviceId)
+    public static function getUserIdByServiceId($serviceId)
     {
         $serviceId = intval($serviceId);
 
@@ -1065,7 +1042,7 @@ class Helpers
         }
     }
 
-    static public function getCurrencyId($currencyCode)
+    public static function getCurrencyId($currencyCode)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -1082,7 +1059,7 @@ class Helpers
         }
     }
 
-    static public function getCurrencyRate($currencyCode)
+    public static function getCurrencyRate($currencyCode)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -1099,7 +1076,7 @@ class Helpers
         }
     }
 
-    static public function getCurrencyList()
+    public static function getCurrencyList()
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();
@@ -1112,7 +1089,7 @@ class Helpers
         return $rows;
     }
 
-    static public function getProductPrice($productId, $currencyId)
+    public static function getProductPrice($productId, $currencyId)
     {
         $pdo = Manager::connection()->getPdo();
         $pdo->beginTransaction();

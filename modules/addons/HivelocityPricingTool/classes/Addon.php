@@ -79,9 +79,10 @@ class Addon
         }
 
         $disabled = '';
-        $disabledmsg = '';
+        $disabledMsg = '';
 
-        $queryExists = Capsule::table('mod_hivelocity_cron')->select('value')->where('value', 'RunFiveMinCron')->count();
+        $queryExists = Capsule::table('mod_hivelocity_cron')->select('value')->where('value', 'RunFiveMinCron')
+            ->count();
 
         if ($_GET['action'] == 'generateproducts') {
             Capsule::table('mod_hivelocity_cron')->updateOrCreate([
@@ -93,7 +94,7 @@ class Addon
 
         if ($queryExists || $_GET['action'] == 'generateproducts') {
             $disabled = 'disabled';
-            $disabledmsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
+            $disabledMsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
         }
 
         if (isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {
@@ -109,14 +110,16 @@ class Addon
             if ($action == "updatePricing") {
                 if ($_POST["globalchange"] == 'true') {
                     unset($_POST['DataTables_Table_0_length']);
-                    $globalprofit = (float) $_POST["globalprofit"];
+                    $globalProfit = (float) $_POST["globalprofit"];
                     foreach ($productList as $productData) {
                         $remoteProductPrice = Helpers::getHivelocityProductPrice($productData->configoption1);
-                        $profit = ($remoteProductPrice * $globalprofit) / 100;
-                        $price = $remoteProductPrice + $profit;
-                        $currencyId = $_POST["currencyId"];
+                        if ($remoteProductPrice) {
+                            $profit = ($remoteProductPrice * $globalProfit) / 100;
+                            $price = $remoteProductPrice + $profit;
+                            $currencyId = $_POST["currencyId"];
 
-                        Helpers::setProductPrice($productData->id, $price, $currencyId);
+                            Helpers::setProductPrice($productData->id, $price, $currencyId);
+                        }
                     }
                 } else {
                     foreach ($_POST["productId"] as $index => $productId) {
@@ -199,7 +202,7 @@ class Addon
         $smarty->assign('success', $success);
         $smarty->assign('error', $error);
         $smarty->assign('disabled', $disabled);
-        $smarty->assign('disabledmsg', $disabledmsg);
+        $smarty->assign('disabledmsg', $disabledMsg);
         $smarty->assign('crondisable', $crondisable);
 
         $smarty->caching = false;
