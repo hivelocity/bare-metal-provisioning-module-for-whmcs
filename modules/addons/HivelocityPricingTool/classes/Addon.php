@@ -111,12 +111,12 @@ class Addon
                     unset($_POST['DataTables_Table_0_length']);
                     $globalprofit = (float) $_POST["globalprofit"];
                     foreach ($productList as $productData) {
-                        $remoteProductPrice = Helpers::getHivelocityProductPrice($productData["configoption1"]);
+                        $remoteProductPrice = Helpers::getHivelocityProductPrice($productData->configoption1);
                         $profit = ($remoteProductPrice * $globalprofit) / 100;
                         $price = $remoteProductPrice + $profit;
                         $currencyId = $_POST["currencyId"];
 
-                        Helpers::setProductPrice($productData["id"], $price, $currencyId);
+                        Helpers::setProductPrice($productData->id, $price, $currencyId);
                     }
                 } else {
                     foreach ($_POST["productId"] as $index => $productId) {

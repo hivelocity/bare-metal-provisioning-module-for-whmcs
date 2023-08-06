@@ -13,7 +13,7 @@ class Cron
         foreach ($productList as $productData) {
             set_time_limit(60);
 
-            $productId = $productData["id"];
+            $productId = $productData->id;
             $serverConfig = Helpers::getServerConfigByProductId($productId);
 
             $apiUrl = $serverConfig["hostname"];
@@ -22,7 +22,7 @@ class Cron
             Api::setApiDetails($apiUrl, $apiKey);
 
             try {
-                $remoteProductId = $productData["configoption1"];
+                $remoteProductId = $productData->configoption1;
                 $remoteProductData = Api::getProductDetails($remoteProductId);
             } catch (\Exception $e) {
                 continue;
@@ -170,7 +170,7 @@ class Cron
         $localProductList = Helpers::getProductList();
 
         foreach ($localProductList as $localProductData) {
-            $localProductId = $localProductData["id"];
+            $localProductId = $localProductData->id;
 
             if (in_array($localProductId, $processedProducts)) {
                 Helpers::unhideProduct($localProductId);

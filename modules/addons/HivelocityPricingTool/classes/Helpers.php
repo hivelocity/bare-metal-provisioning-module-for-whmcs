@@ -410,17 +410,9 @@ class Helpers
         return $row["servertype"];
     }
 
-    static public function getProductList()
+    static public function getProductList(): array
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblproducts WHERE servertype = 'Hivelocity'";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $rows = $statement->fetchAll();
-        $pdo->commit();
-
-        return $rows;
+        return Capsule::table('tblproducts')->where('servertype', 'Hivelocity')->get()->toArray() ?? [];
     }
 
     static public function getProductGroupList(): array
