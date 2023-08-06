@@ -81,11 +81,7 @@ class Addon
         $disabled = '';
         $disabledmsg = '';
 
-        $q = Capsule::table('mod_hivelocity_cron')->select('value')->where('value', 'RunFiveMinCron')->count();
-        if ($q) {
-            $disabled = 'disabled';
-            $disabledmsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
-        }
+        $queryExists = Capsule::table('mod_hivelocity_cron')->select('value')->where('value', 'RunFiveMinCron')->count();
 
         if ($_GET['action'] == 'generateproducts') {
             Capsule::table('mod_hivelocity_cron')->updateOrCreate([
@@ -93,6 +89,9 @@ class Addon
             ], [
                 'created_at' => date('Y-m-d h:i:s')
             ]);
+        }
+
+        if ($queryExists || $_GET['action'] == 'generateproducts') {
             $disabled = 'disabled';
             $disabledmsg = 'Product sync is in progress it may take 5-10 min.Please be patient.';
         }
