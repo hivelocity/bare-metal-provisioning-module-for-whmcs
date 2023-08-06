@@ -6,7 +6,7 @@ use WHMCS\Database\Capsule;
 
 class Addon
 {
-    static public function config()
+    public static function config()
     {
         $serverGroupList = Helpers::getServerGroupList();
         $serverGroupOptions = [];
@@ -62,7 +62,7 @@ class Addon
         return $configArray;
     }
 
-    static public function output($params)
+    public static function output($params)
     {
         $crondisable = '';
 
@@ -206,5 +206,64 @@ class Addon
         $smarty->compile_dir = $GLOBALS['templates_compiledir'];
 
         $smarty->display(dirname(dirname(__FILE__)) . '/templates/tpl/adminArea.tpl');
+    }
+
+    public static function databaseManagement()
+    {
+        if (!Capsule::schema()->hasTable('mod_hivelocity_cron')) {
+            Capsule::schema()->create('mod_hivelocity_cron', function ($table) {
+                $table->increments('id');
+                $table->string('value');
+                $table->timestamps();
+            });
+        }
+
+        if (!Capsule::schema()->hasTable('HivelocityProductPrices')) {
+            Capsule::schema()->create('HivelocityProductPrices', function ($table) {
+                $table->increments('hivelocityProductId');
+                $table->decimal('hivelocityProductPrice', 10, 3);
+            });
+        }
+
+        if (!Capsule::schema()->hasTable('HivelocityDeploymentCorrelation')) {
+            Capsule::schema()->create('HivelocityDeploymentCorrelation', function ($table) {
+                $table->increments('whmcsServiceId');
+                $table->foreignId('hivelocityDeploymentId')->index();
+            });
+        }
+
+        if (!Capsule::schema()->hasTable('HivelocityOrderCorrelation')) {
+            Capsule::schema()->create('HivelocityOrderCorrelation', function ($table) {
+                $table->increments('whmcsServiceId');
+                $table->foreignId('hivelocityOrderId')->index();
+            });
+        }
+
+        if (!Capsule::schema()->hasTable('HivelocityServiceCorrelation')) {
+            Capsule::schema()->create('HivelocityServiceCorrelation', function ($table) {
+                $table->increments('whmcsServiceId');
+                $table->foreignId('hivelocityServiceId')->index();
+            });
+        }
+
+        if (!Capsule::schema()->hasTable('HivelocityDeviceCorrelation')) {
+            Capsule::schema()->create('HivelocityDeviceCorrelation', function ($table) {
+                $table->increments('whmcsServiceId');
+                $table->foreignId('hivelocityDeviceId')->index();
+            });
+        }
+
+        if (!Capsule::schema()->hasTable('HivelocityDomainCorrelation')) {
+            Capsule::schema()->create('HivelocityDomainCorrelation', function ($table) {
+                $table->increments('hivelocityDomainId');
+                $table->foreignId('whmcsUserId')->index();
+                $table->foreignId('whmcsServiceId')->index();
+            });
+        }
+
+        Capsule::table('mod_hivelocity_cron')->insert([
+            'value' => 'RunFiveMinCron',
+            'created_at' => date('Y-m-d h:i:s'),
+        ]);
     }
 }

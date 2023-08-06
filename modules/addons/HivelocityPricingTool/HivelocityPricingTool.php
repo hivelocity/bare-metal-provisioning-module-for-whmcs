@@ -20,18 +20,7 @@ function HivelocityPricingTool_config(): array
 
 function HivelocityPricingTool_activate()
 {
-    if (!Capsule::schema()->hasTable('mod_hivelocity_cron')) {
-        Capsule::schema()->create('mod_hivelocity_cron', function ($table) {
-            $table->increments('id');
-            $table->string('value');
-            $table->timestamps();
-        });
-    }
-
-    Capsule::table('mod_hivelocity_cron')->insert([
-        'value' => 'RunFiveMinCron',
-        'created_at' => date('Y-m-d h:i:s'),
-    ]);
+    Addon::databaseManagement();
 }
 
 function HivelocityPricingTool_deactivate(): array
