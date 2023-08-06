@@ -2,6 +2,8 @@
 
 namespace HivelocityPricingTool\classes;
 
+use Exception;
+
 class Api
 {
     static private $apiUrl;
@@ -17,6 +19,7 @@ class Api
 
     static public function sendRequest($resource, $httpMethod = 'GET', $postFields = [], $postInQuery = false)
     {
+        //todo use guzzle insted of curl
         $apiKey = self::$apiKey;
         $url = self::$apiUrl . $resource;
 
@@ -39,10 +42,6 @@ class Api
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
 
-        //curl_setopt($ch, CURLOPT_COOKIESESSION,     true);
-        //curl_setopt($ch, CURLOPT_COOKIEJAR,         __DIR__."/q/jar");
-        //curl_setopt($ch, CURLOPT_COOKIEFILE,        __DIR__."/q/file");
-
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "Content-Type: application/json",
             "User-Agent: PostmanRuntime/7.26.8",
@@ -56,7 +55,6 @@ class Api
         $cUrlError = curl_error($ch);
         curl_close($ch);
 
-        //debug
         if (1) {
             if ($cUrlError) {
                 $response = $cUrlError;
@@ -70,12 +68,10 @@ class Api
                 "Json" => !empty($postJson) ? $postJson : "",
                 "Query" => !empty($postQuery) ? $postQuery : "",
             ];
-            //logModuleCall("Hivelocity", $action, $request, "", $response);
         }
-        //debug
 
         if ($cUrlError) {
-            throw new \Exception($cUrlError);
+            throw new Exception($cUrlError);
         }
 
         $rawResponse = $response;
@@ -83,7 +79,7 @@ class Api
             $response = json_decode($response, true);
 
             if (json_last_error() != JSON_ERROR_NONE) {
-                throw new \Exception("API response is invalid. " . $rawResponse);
+                throw new Exception("API response is invalid. " . $rawResponse);
             }
 
             if (isset($response["message"]) && isset($response["code"]) && $response["code"] != 201) {
@@ -93,7 +89,7 @@ class Api
                     $message = $response["message"];
                 }
 
-                throw new \Exception($message);
+                throw new Exception($message);
             }
 
             if (isset($response["description"]) && isset($response["code"]) && $response["code"] > 201) {
@@ -103,7 +99,7 @@ class Api
                     $message = $response["description"];
                 }
 
-                throw new \Exception($message);
+                throw new Exception($message);
             }
 
             if (isset($response["schema_errors"])) {
@@ -119,7 +115,7 @@ class Api
                     }
                     $fullMessage .= $message . " ";
                 }
-                throw new \Exception($fullMessage);
+                throw new Exception($fullMessage);
             }
 
             if (isset($response["errors"])) {
@@ -133,10 +129,10 @@ class Api
                         $fullMessage .= $message . " ";
                     }
                 }
-                throw new \Exception($fullMessage);
+                throw new Exception($fullMessage);
             }
         } else {
-            throw new \Exception("API response is invalid.");
+            throw new Exception("API response is invalid.");
         }
 
         return $response;

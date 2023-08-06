@@ -2,11 +2,11 @@
 
 namespace HivelocityPricingTool\classes;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Exception;
 
 class Cron
 {
-    static public function priceChangeNotify()
+    public static function priceChangeNotify()
     {
         $productList = Helpers::getProductList();
 
@@ -24,7 +24,7 @@ class Cron
             try {
                 $remoteProductId = $productData['configoption1'];
                 $remoteProductData = Api::getProductDetails($remoteProductId);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 continue;
             }
 
@@ -59,7 +59,7 @@ class Cron
         }
     }
 
-    static public function synchronizeProducts()
+    public static function synchronizeProducts()
     {
         $addonConfig = Helpers::getAdonConfig();
         $serverGroupId = $addonConfig["serverGroup"];
