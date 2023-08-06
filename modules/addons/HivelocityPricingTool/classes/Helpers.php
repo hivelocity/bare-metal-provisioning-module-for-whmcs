@@ -32,31 +32,20 @@ class Helpers
         return $addonConfig;
     }
 
-    public static function isNotificationEnabled()
+    public static function isNotificationEnabled(): bool
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "SELECT value FROM tbladdonmodules WHERE module = 'HivelocityPricingTool' AND setting = 'priceNotification'";
-        $statement = $pdo->prepare($query);
-        $statement->execute();
-        $row = $statement->fetch();
-        $pdo->commit();
+        $value = Capsule::table('tbladdonmodules')->where('module', 'HivelocityPricingTool')->where('setting', 'priceNotification')->first()->value ?? '';
 
-        if (isset($row["value"]) && $row["value"] == "on") {
-            return true;
-        } else {
-            return false;
-        }
+        return $value == 'on';
     }
 
-    public static function saveHivelocityProductPrice($hivelocityProductId, $hivelocityProductPrice)
+    public static function saveHivelocityProductPrice($hivelocityProductId, $hivelocityProductPrice): void
     {
-        $pdo = Manager::connection()->getPdo();
-        $pdo->beginTransaction();
-        $query = "INSERT INTO HivelocityProductPrices (hivelocityProductId, hivelocityProductPrice) VALUES (?,?) ON DUPLICATE KEY UPDATE hivelocityProductPrice = ?;";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$hivelocityProductId, $hivelocityProductPrice, $hivelocityProductPrice]);
-        $pdo->commit();
+        Capsule::table('HivelocityProductPrices')->updateOrInsert([
+            'hivelocityProductId' => $hivelocityProductId,
+        ], [
+            'hivelocityProductPrice' => $hivelocityProductPrice,
+        ]);
     }
 
     public static function getHivelocityProductPrice($hivelocityProductId)
