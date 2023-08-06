@@ -216,64 +216,39 @@ class Helpers
         return $locationName;
     }
 
-    public static function getServerConfigByProductId($productId)
+    public static function getServerConfigByProductId(int $productId)
     {
-        $productId = intval($productId);
+        $serverGroupId = Capsule::table('tblproducts')->where('id', $productId)->select('servergroup')
+                ->first()->servergroup ?? false;
 
-        $pdo = Manager::connection()->getPdo();
-
-        $pdo->beginTransaction();
-        $query = "SELECT servergroup FROM tblproducts WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$productId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["servergroup"]) && !empty($row["servergroup"])) {
-            $serverGroupId = $row["servergroup"];
+        if ($serverGroupId) {
+            return self::getServerConfigByServerGroupId($serverGroupId);
         } else {
             return false;
         }
-
-        return self::getServerConfigByServerGroupId($serverGroupId);
     }
 
-    public static function getServerConfigByServerGroupId($serverGroupId)
+    public static function getServerConfigByServerGroupId(int $serverGroupId)
     {
-        $serverGroupId = intval($serverGroupId);
+        $rels = Capsule::table('tblservergroupsrel')->where('groupid', $serverGroupId)->get();
 
-        $pdo = Manager::connection()->getPdo();
-
-        $pdo->beginTransaction();
-        $query = "SELECT serverid FROM tblservergroupsrel WHERE groupid = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$serverGroupId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["serverid"]) && !empty($row["serverid"])) {
-            $serverId = $row["serverid"];
-        } else {
+        if ($rels->count() < 1) {
             return false;
         }
-
-        $pdo->beginTransaction();
-        $query = "SELECT * FROM tblservers WHERE id = ?";
-        $statement = $pdo->prepare($query);
-        $statement->execute([$serverId]);
-        $row = $statement->fetch();
-        $pdo->commit();
-
-        if (isset($row["id"]) && !empty($row["id"])) {
-            return $row;
-        } else {
-            return false;
+        $serverIds = [];
+        foreach ($rels as $rel) {
+            $serverIds[] = $rel->serverid;
         }
+
+        $data = Capsule::table('tblservers')->whereIn('id', $serverIds)->where('hostname', 'LIKE', '%hivelocity%')->first();
+
+        return (array) $data ?? false;
     }
 
     public static function getServerGroupList(): array
     {
         $data = Capsule::table('tblservergroups')->get()->toArray();
+
         return self::toArray($data);
     }
 
@@ -402,13 +377,14 @@ class Helpers
     public static function getProductList(): array
     {
         $data = Capsule::table('tblproducts')->where('servertype', 'Hivelocity')->get()->toArray();
-        return self::toArray($data);
 
+        return self::toArray($data);
     }
 
     public static function getProductGroupList(): array
     {
         $data = Capsule::table('tblproductgroups')->get()->toArray();
+
         return self::toArray($data);
     }
 
@@ -863,7 +839,7 @@ class Helpers
             ->where('currency', $currencyId)->select('id')->first();
 
         if ($pricing->id) {
-            $pricing->update([
+            Capsule::table('tblpricing')->where('id', $pricing->id)->update([
                 'monthly' => $price
             ]);
         } else {
@@ -1083,6 +1059,7 @@ class Helpers
     public static function getCurrencyList(): array
     {
         $data = Capsule::table('tblcurrencies')->get()->toArray();
+
         return self::toArray($data);
     }
 
@@ -1107,7 +1084,7 @@ class Helpers
     {
         if ($data) {
             return json_decode(json_encode($data), true);
-        }else{
+        } else {
             return [];
         }
     }
