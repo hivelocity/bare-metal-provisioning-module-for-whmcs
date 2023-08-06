@@ -548,7 +548,7 @@ class Helpers
         return $row["id"];
     }
 
-    public static function createConfigOptionSub($optionId, $name)
+    public static function createConfigOptionSub(int $optionId, string $name)
     {
         $optionId = intval($optionId);
 
@@ -771,8 +771,6 @@ class Helpers
                 Helpers::hideConfigOption($localConfigOptionId);
             }
         }
-
-        //------------------------------------------------------------------------------
 
         return;
     }

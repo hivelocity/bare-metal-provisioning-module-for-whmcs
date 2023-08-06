@@ -3,10 +3,12 @@
 namespace HivelocityPricingTool\classes;
 
 use WHMCS\Database\Capsule;
+use Exception;
+use Smarty;
 
 class Addon
 {
-    public static function config()
+    public static function config(): array
     {
         $serverGroupList = Helpers::getServerGroupList();
         $serverGroupOptions = [];
@@ -18,17 +20,17 @@ class Addon
             $serverGroupOptions[$serverGroupId] = $serverGroupName;
         }
 
-        $productGropupList = Helpers::getProductGroupList();
-        $productGropupOptions = [];
+        $productGroupList = Helpers::getProductGroupList();
+        $productGroupOptions = [];
 
-        foreach ($productGropupList as $productGroupData) {
+        foreach ($productGroupList as $productGroupData) {
             $productGroupId = $productGroupData['id'];
             $productGroupName = $productGroupData['name'];
 
-            $productGropupOptions[$productGroupId] = $productGroupName;
+            $productGroupOptions[$productGroupId] = $productGroupName;
         }
 
-        $configArray = [
+        return [
 
             "name" => "Hivelocity Pricing Tool",
             "description" => "A simple interface allowing you to quickly change pricing for all the products using Hivelocity as the provisioning module.",
@@ -45,7 +47,7 @@ class Addon
                 "productGroup" => [
                     "FriendlyName" => "Product Group",
                     "Type" => "dropdown",
-                    "Options" => $productGropupOptions,
+                    "Options" => $productGroupOptions,
                     "Size" => "25",
                     "Description" => "Product Group for auto created products."
                 ],
@@ -58,24 +60,22 @@ class Addon
                 ],
             ]
         ];
-
-        return $configArray;
     }
 
     public static function output($params)
     {
-        $crondisable = '';
+        $cronDisable = '';
 
         if (function_exists('shell_exec')) {
             $output = shell_exec('crontab -l');
             if ($output) {
                 if (is_numeric(strpos($output, '/HivelocityPricingTool/cron.php')) && !substr_count($output,
                         "HivelocityPricingTool") > 1) {
-                    $crondisable = 'It seems cron is not setup yet.Please set the cron first.';
+                    $cronDisable = 'It seems cron is not setup yet.Please set the cron first.';
                 }
             }
         } else {
-            $crondisable = 'Please enable "shell_exec" function in your php.ini file.';
+            $cronDisable = 'Please enable "shell_exec" function in your php.ini file.';
         }
 
         $disabled = '';
@@ -132,8 +132,8 @@ class Addon
 
                 $success = true;
             }
-        } catch (\Exception $e) {
-            $error = $e->getMessage;
+        } catch (Exception $e) {
+            $error = $e->getMessage();
         }
 
         $currencyList = Helpers::getCurrencyList();
@@ -141,7 +141,6 @@ class Addon
         $smartyVarsCurrencyList = [];
 
         foreach ($currencyList as $currencyData) {
-            $currencyId = $currencyData["id"];
             $smartyVarsCurrencyList[$currencyData["id"]] = [
                 "code" => $currencyData["code"],
                 "suffix" => $currencyData["suffix"]
@@ -195,7 +194,7 @@ class Addon
             }
         }
 
-        $smarty = new \Smarty();
+        $smarty = new Smarty();
 
         $smarty->assign('productList', $smartyVarsProductList);
         $smarty->assign('currencyList', $smartyVarsCurrencyList);
@@ -203,12 +202,12 @@ class Addon
         $smarty->assign('error', $error);
         $smarty->assign('disabled', $disabled);
         $smarty->assign('disabledmsg', $disabledMsg);
-        $smarty->assign('crondisable', $crondisable);
+        $smarty->assign('crondisable', $cronDisable);
 
         $smarty->caching = false;
         $smarty->compile_dir = $GLOBALS['templates_compiledir'];
 
-        $smarty->display(dirname(dirname(__FILE__)) . '/templates/tpl/adminArea.tpl');
+        $smarty->display(dirname(__FILE__, 2) . '/templates/tpl/adminArea.tpl');
     }
 
     public static function databaseManagement()
