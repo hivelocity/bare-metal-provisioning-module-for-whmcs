@@ -6,20 +6,19 @@ use Exception;
 
 class Api
 {
-    static private string $apiUrl;
-    static private string $apiKey;
+    private static string $apiUrl;
+    private static string $apiKey;
 
-    static public function setApiDetails($apiUrl, $apiKey)
+    public static function setApiDetails($apiUrl, $apiKey)
     {
         $apiUrl = str_replace("DOT", ".", $apiUrl);
 
-        self::$apiUrl = "https://" . $apiUrl . "/api/v2/";
+        self::$apiUrl = "https://" . $apiUrl . "/api/v2";
         self::$apiKey = $apiKey;
     }
 
-    static public function sendRequest($resource, $httpMethod = 'GET', $postFields = [], $postInQuery = false)
+    public static function sendRequest($resource, $httpMethod = 'GET', $postFields = [], $postInQuery = false)
     {
-        //todo use guzzle insted of curl
         $apiKey = self::$apiKey;
         $url = self::$apiUrl . $resource;
 
@@ -138,175 +137,42 @@ class Api
         return $response;
     }
 
-    static public function getProductList()
+    public static function getProductList()
     {
         $resource = "/inventory/product";
 
         return self::sendRequest($resource);
     }
 
-    static public function getProductDetails($productId)
+    public static function getProductDetails($productId)
     {
         $resource = "/inventory/product/$productId";
 
         return self::sendRequest($resource);
     }
 
-    static public function getProductOptions($productId)
+    public static function getProductOptions($productId)
     {
         $resource = "/product/$productId/options?groupBy=upgrade";
 
         return self::sendRequest($resource);
     }
 
-    static public function getProductOS($productId)
+    public static function getProductOS($productId)
     {
         $resource = "/product/$productId/operating-systems";
 
         return self::sendRequest($resource);
     }
 
-    static public function getBillingInfoList()
+    public static function getBillingInfoList()
     {
         $resource = "/billing-info/";
 
         return self::sendRequest($resource);
     }
 
-    static public function createDeployment($deploymentName)
-    {
-        $resource = "/deploy/";
-
-        $postFields = [
-            "deploymentName" => $deploymentName,
-        ];
-
-        return self::sendRequest($resource, "POST", $postFields, true);
-    }
-
-    static public function getDeploymentList()
-    {
-        $resource = "/deploy/";
-
-        return self::sendRequest($resource);
-    }
-
-    static public function getDeploymentDetails($deploymentId)
-    {
-        $resource = "/deploy/$deploymentId";
-
-        return self::sendRequest($resource);
-    }
-
-    static public function configureDeployment($deploymentId, $productId, $locationId, $osId, $panelId, $hostName,
-        $billingPeriod
-    )
-    {
-        $resource = "/deploy/$deploymentId";
-
-        $postFields = [
-            "locationCode" => $locationId,
-            "billingPeriod" => $billingPeriod,
-            "operatingSystem" => $osId,
-            "hostnames" => [$hostName],
-            "productId" => $productId,
-        ];
-
-        if (!empty($panelId)) {
-            $postFields["options"] = [$panelId];
-        }
-
-        return self::sendRequest($resource, "PUT", $postFields);
-    }
-
-    static public function executeDeployment($deploymentId, $billingInfoId)
-    {
-        $resource = "/deploy/$deploymentId";
-
-        $postFields = [
-            "billingInfo" => $billingInfoId,
-        ];
-
-        return self::sendRequest($resource, "POST", $postFields);
-    }
-
-    static public function getInvoiceList()
-    {
-        $resource = "/invoice/";
-
-        return self::sendRequest($resource);
-    }
-
-    static public function getOrderList()
-    {
-        $resource = "/order/";
-
-        return self::sendRequest($resource);
-    }
-
-    static public function getServiceList($orderId)
-    {
-        $resource = "/service/?orderId=$orderId";
-
-        return self::sendRequest($resource);
-    }
-
-    static public function getDeviceList()
-    {
-        $resource = "/device/";
-
-        $response = self::sendRequest($resource);
-
-        return $response;
-    }
-
-    static public function getDeviceDetails($deviceId)
-    {
-        $resource = "/device/$deviceId";
-
-        return self::sendRequest($resource);
-    }
-
-    static public function cancelDevice($deviceId)
-    {
-        $resource = "/cancellation/cancellation";
-
-        $postFields = [
-            "deviceId" => $deviceId,
-        ];
-
-        return self::sendRequest($resource, "POST", $postFields);
-    }
-
-    static public function getGraph($deviceId, $period = "day", $start = null, $end = null)
-    {
-        $resource = "/bandwidth/device/$deviceId/image";
-
-        $postFields = [
-            "period" => $period,
-            "start" => $start,
-            "end" => $end,
-            "interface" => "eth0",
-        ];
-
-        return self::sendRequest($resource, "POST", $postFields, true);
-    }
-
-    static public function getBandwidthDetails($deviceId, $period = "day", $start = null, $end = null)
-    {
-        $resource = "/bandwidth/device/$deviceId";
-
-        $postFields = [
-            "period" => $period,
-            "start" => $start,
-            "end" => $end,
-            "interface" => "eth0",
-        ];
-
-        return self::sendRequest($resource, "POST", $postFields, true);
-    }
-
-    static public function executePowerAction($deviceId, $powerAction)
+    public static function executePowerAction($deviceId, $powerAction)
     {
         $resource = "/device/$deviceId/power";
 
@@ -317,17 +183,17 @@ class Api
         return self::sendRequest($resource, "POST", $postFields, true);
     }
 
-    static public function bootDevice($deviceId)
+    public static function bootDevice($deviceId)
     {
         return self::executePowerAction($deviceId, "boot");
     }
 
-    static public function rebootDevice($deviceId)
+    public static function rebootDevice($deviceId)
     {
         return self::executePowerAction($deviceId, "reboot");
     }
 
-    static public function shutdownDevice($deviceId)
+    public static function shutdownDevice($deviceId)
     {
         return self::executePowerAction($deviceId, "shutdown");
     }
