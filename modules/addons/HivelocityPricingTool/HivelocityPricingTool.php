@@ -4,12 +4,12 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
+require_once 'Autoloader.php';
+
 use WHMCS\Database\Capsule;
 use HivelocityPricingTool\classes\Addon;
 
-require_once 'Autoloader.php';
-
-function HivelocityPricingTool_config()
+function HivelocityPricingTool_config(): array
 {
     try {
         return Addon::config();
@@ -34,7 +34,7 @@ function HivelocityPricingTool_activate()
     ]);
 }
 
-function HivelocityPricingTool_deactivate()
+function HivelocityPricingTool_deactivate(): array
 {
     Capsule::schema()->dropIfExists('mod_hivelocity_cron');
 
