@@ -2,8 +2,6 @@
 
 namespace HivelocityPricingTool\classes;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
-
 class Addon
 {
     static public function config()
