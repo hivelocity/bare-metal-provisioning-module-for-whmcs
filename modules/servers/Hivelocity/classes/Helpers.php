@@ -1,5 +1,4 @@
 <?php
-
 namespace Hivelocity\classes;
 use Illuminate\Database\Capsule\Manager as Capsule;
 

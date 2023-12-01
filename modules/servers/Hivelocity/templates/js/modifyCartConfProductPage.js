@@ -34,6 +34,8 @@ $(document).ready(function() {
         onMsChange();
     });
 
+    $('#'+customIds['init']).attr('placeholder',"#!/bin/bash\nexport DEBIAN_FRONTEND=noninteractive\napt-get update\napt-get upgrade -y\napt install vim -y\napt install htop -y\napt install nginx -y\napt install git -y\ndebconf-set-selections<<<'mysql-server mysql-server/root_password password 123456'\ndebconf-set-selections<<<'mysql-server mysql-server/root_password_again password 123456'\napt -y install mysql-server");
+
     if($('#'+fieldsIds['Add user data']).not(":checked") && $('#'+fieldsIds['Customize SSH Key Access']).not(":checked"))
     {
         

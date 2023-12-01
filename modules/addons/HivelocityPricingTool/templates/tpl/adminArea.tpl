@@ -33,22 +33,25 @@
                     &nbsp;&nbsp;<a {if !$disabled} href="/admin/addonmodules.php?module=HivelocityPricingTool&action=generateproducts" {/if} class="btn btn-primary" {$disabled}>Sync Products</a>
                 </td>
             </tr>
-            {if $disabledmsg}
-            <tr>
-                <td colspan=4><br>
-                    <div class="alert alert-info">{$disabledmsg}</div>
-                </td>
-
-            </tr>
-            {/if}
+            
             {if $crondisable}
-            <tr>
-                <td colspan=4><br>
-                    <div class="alert alert-danger">{$crondisable}</div>
-                </td>
+                <tr>
+                    <td colspan=4><br>
+                        <div class="alert alert-danger">{$crondisable}</div>
+                    </td>
 
-            </tr>
+                </tr>
             {/if}
+
+            {if $disabledmsg}
+                <tr>
+                    <td colspan=4><br>
+                        <div class="alert alert-info">{$disabledmsg}</div>
+                    </td>
+
+                </tr>
+            {/if}
+            
         </tbody>
     </table>
              

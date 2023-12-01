@@ -70,7 +70,7 @@ class Cron {
         
         Api::setApiDetails($apiUrl, $apiKey);
         
-        $remoteProductListRaw  = Api::getProductList();
+        $remoteProductListRaw  = Api::getProductList(); 
         $remoteProductList     = array();
 
         foreach($remoteProductListRaw as $location => $list) {
@@ -90,7 +90,6 @@ class Cron {
             }
         }
 
-        
         $currencyList       = Helpers::getCurrencyList();
         foreach($currencyList as $currency) {
             $currencyId     = $currency["id"];
@@ -126,29 +125,29 @@ class Cron {
                 }
 
                 $desc='';
-                if($remoteProductData["product_bandwidth"])
+                /*if($remoteProductData["product_bandwidth"])
                 {
                     $desc .="Bandwidth : ".$remoteProductData["product_bandwidth"];
-                }
+                }*/
 
                 if($remoteProductData["product_cpu"])
                 {
-                    $desc .="<br>CPU : ".$remoteProductData["product_cpu"];
+                    $desc .="CPU - ".$remoteProductData["product_cpu"];
                 }
 
                 if($remoteProductData["product_memory"])
                 {
-                    $desc .="<br>Memory : ".$remoteProductData["product_memory"];
+                    $desc .="<br>RAM - ".$remoteProductData["product_memory"];
                 }
 
                 if($remoteProductData["product_drive"])
                 {
-                    $desc .="<br>Drive : ".$remoteProductData["product_drive"];
+                    $desc .="<br>Drive - ".$remoteProductData["product_drive"];
                 }
 
                 
                 $result             = WhmcsApi::AddProduct([
-                    "name"              => $remoteProductData["product_id"]." - ".$remoteProductData["product_cpu"]." - ".$remoteProductData["product_memory"]." - ".$remoteProductData["product_drive"],
+                    "name"              => $remoteProductData["product_cpu"]." - ".$remoteProductData["product_memory"]." - ".$remoteProductData["product_drive"],
                     "gid"               => $productGroupId,
                     "type"              => "server",
                     "paytype"           => "recurring",
@@ -158,9 +157,13 @@ class Cron {
                     "module"            => "Hivelocity",
                     "configoption1"     => $remoteProductId,
                     "configoption2"     => $billingId,
+                    "configoption3"     => $billingId,
+                    "configoption4"     => $remoteProductData["data_center"],
+                    "configoption5"     => 'CentOS 7.x',
                     "description"       => $desc,
                 ]);
 
+                $desc='';
                 $localProductId     = $result["pid"];
                 
                 Helpers::addProductCustomField($localProductId);
@@ -170,7 +173,6 @@ class Cron {
                 
             } elseif($localProductId != false && $remoteProductData["stock"] != "unavailable") {
                 //update product
-                
                 Helpers::createConfigOptions($localProductId, $remoteProductId);
                 $processedProducts[]    = $localProductId;
             }
@@ -183,11 +185,9 @@ class Cron {
             $localProductId = $localProductData["id"];
 
             if(in_array($localProductId, $processedProducts)) {
-
                 Helpers::unhideProduct($localProductId);
 
             } else {
-
                 Helpers::hideProduct($localProductId);
             }
         }
