@@ -81,7 +81,12 @@ class Addon {
         if(mysql_num_rows($q))
         {
             $disabled='disabled';
-            $disabledmsg='Product sync is in progress it may take 5-10 min.Please be patient.';
+            $disabledmsg='Product sync is in progress it may take 5-10 min.Please be patient. Make sure that cron is setup for every 5 minute.';
+        }
+        else
+        {
+            $disabled='';
+            $disabledmsg='';
         }
 
         if($_GET['action']=='generateproducts')
@@ -89,7 +94,7 @@ class Addon {
             mysql_query("DELETE FROM mod_hivelocity_cron WHERE value='RunFiveMinCron'");
             insert_query("mod_hivelocity_cron",array("value"=>'RunFiveMinCron',"created_at"=>date('Y-m-d h:i:s')));
             $disabled='disabled';
-            $disabledmsg='Product sync is in progress it may take 5-10 min.Please be patient.';
+            $disabledmsg='Product sync is in progress it may take 5-10 min.Please be patient. Make sure that cron is setup for every 5 minute.';
         }
         
         if(isset($_POST["hivelocityPricingToolAction"]) && !empty($_POST["hivelocityPricingToolAction"])) {

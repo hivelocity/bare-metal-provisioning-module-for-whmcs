@@ -56,7 +56,7 @@ class MetricsProvider implements ProviderInterface {
         ];
     }
 
-    public function usage() {
+    public function usage() { 
         
         $serverId       = $this->moduleParams["serverid"];
         $serviceIdList  = Helpers::getServiceIdList($serverId);

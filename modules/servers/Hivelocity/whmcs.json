@@ -1,0 +1,20 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-servers",
+  "name": "Hivelocity",
+  "license": "proprietary",
+  "description": {
+    "name": "Bare Metal Server Management",
+    "tagline": "Manage powerful bare-metal servers with ease. Includes IPMI access, DNS management, and VPS deployment tools.",
+    "long": "Explore the power of our bare-metal servers through this module. Our bare-metal servers provide you with IPMI access and DNS management, making server administration a breeze. You can also utilize our VPS deployment tool for added convenience."
+  },
+  "logo": {
+    "filename": "img/hilogo.png"
+  },
+  "authors": [
+    {
+      "name": "WHMCS",
+      "homepage": "https:\/\/www.whmcs.com\/"
+    }
+  ]
+}

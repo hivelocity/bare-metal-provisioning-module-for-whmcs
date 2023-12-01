@@ -6,12 +6,8 @@ if (!defined("WHMCS")) {
 require_once 'Autoloader.php';
 
 function Hivelocity_MetaData() {
-    return array(
-        'DisplayName'                               => 'Hivelocity',
-        'APIVersion'                                => '1.1',
-        'RequiresServer'                            => true,
-        'ListAccountsUniqueIdentifierField'         => 'domain',
-    );
+
+    return \Hivelocity\classes\Addon::getMetaData();
 }
 
 function Hivelocity_ConfigOptions($params) {
@@ -258,4 +254,38 @@ function Hivelocity_Reload($params) {
 function Hivelocity_MetricProvider($params) {
     
     return new \Hivelocity\classes\MetricsProvider($params);
+}
+
+function Hivelocity_AdminServicesTabFields($params) {
+
+    try {
+        return \Hivelocity\classes\Addon::adminservicestabfields($params);
+    } catch (Exception $e) {
+        // Record the error in WHMCS's module log.
+        logModuleCall(
+            'Hivelocity',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        return;
+    }
+}
+
+function Hivelocity_AdminServicesTabFieldsSave($params) {
+
+    try {
+        return \Hivelocity\classes\Addon::adminservicestabfieldsave($params);
+    } catch (Exception $e) {
+        // Record the error in WHMCS's module log.
+        logModuleCall(
+            'Hivelocity',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        return;
+    }
 }

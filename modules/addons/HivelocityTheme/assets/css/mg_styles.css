@@ -1,0 +1,331 @@
+
+.mg-datapicker {
+    padding: 6px 12px 6px 12px !important;
+    display: flex !important;
+    position: relative !important;
+    margin: 0 !important;
+}
+.mg-datapicker:after {
+    background-color: #fff !important;
+}
+
+.md-input-action {
+    top: 6px !important;
+}
+
+.mg-copy-component-field {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    opacity: 0;
+}
+
+.mg-copy-component-span:hover {
+    cursor: pointer;
+}
+
+#contentarea > div > h1 {
+    display: none!important;
+}
+
+#layers .lu-app .lu-btn--default,
+#layers .lu-app .lu-btn--danger {
+    color: #737880;
+}
+
+#layers .lu-app .vue-app-main-modal-container .lu-btn--danger:not(.lu-btn--outline) {
+    color: #fff;
+}
+
+#layers .lu-app .lu-btn--default:hover {
+    color: #505459;
+}
+
+#layers .vueDatatableTable .mgTableActions label {
+    display: block;
+    margin-bottom: auto;
+    margin-top: auto;    
+}
+
+/*FIX PRELOADER IN SUBMIT BUTTON*/
+#layers .lu-btn.mg-submit-form .lu-btn__icon.lu-preloader {
+    margin: 0 0 0 0;
+}
+
+/*fix to long modal*/
+#layers .lu-app .lu-modal {
+    display:  grid!important;
+}
+
+/*fix mobile menu */
+#layers .lu-off-canvas-responsive--right:not(.is-open) {
+    margin-right: -5000px;
+}
+
+/*FIX AA TOP MENU*/
+
+#layers .lu-preloader-container--full-screen {
+    z-index: 9999;
+}
+
+#layers .lu-navbar__nav > .lu-nav > .lu-nav__item:not(.has-dropdown) > .lu-nav__link > .drop-arrow {
+    height: 32px;
+    width: 32px;
+    bottom: -18px;
+    right: 50%;
+    margin-right: -24px;
+}
+
+#layers .lu-navbar__nav > .lu-nav > .lu-nav__item:not(.has-dropdown) > .lu-nav__link > .drop-arrow:after {
+    left: 8px;
+    width: 16px;
+    height: 16px;
+    top: 8px;
+    background: #e9ebf0;
+    box-shadow: 3px 3px 3px -1px rgba(0, 0, 0, 0.05) inset;
+    border-radius: 3px;
+}
+
+#layers .lu-navbar__nav > .lu-nav > .lu-nav__item:not(.has-dropdown).is-active .drop-arrow {
+    display: block;
+    z-index: 99;
+}
+
+#layers .lu-navbar__nav > .lu-nav > .lu-nav__item.has-dropdown > .lu-nav__link > .drop-arrow {
+    height: 32px;
+    width: 32px;
+    bottom: -18px;
+    right: 50%;
+    margin-right: -24px;
+    z-index: 99;
+    display: none;
+}
+
+#layers .lu-navbar__nav > .lu-nav > .lu-nav__item.has-dropdown > .lu-nav__link > .drop-arrow:after {
+    left: 8px;
+    width: 16px;
+    height: 16px;
+    top: 8px;
+    background: #e9ebf0;
+    box-shadow: 3px 3px 3px -1px rgba(0, 0, 0, 0.05) inset;
+    border-radius: 3px;
+}
+
+#layers .lu-navbar__nav > .lu-nav > .lu-nav__item.has-dropdown.is-active .drop-arrow {
+    display: block;
+    z-index: 99;
+    animation: none;
+}
+
+
+/*FIX AA TOP MENU END*/
+
+/* RED loader for delete buttons */
+#layers .lu-btn--danger .lu-preloader:before {
+    border-top-color: rgb(244, 62, 62);
+}
+
+/* GREEN loader for submit buttons */
+#layers .lu-btn--success .lu-preloader:before {
+    border-top-color: rgb(98, 202, 95);
+}
+
+/* selectize css fixes */
+#layers .selectize-control.multi .item {
+    padding: 0 8px;
+    margin: 0 4px 4px 0;
+    background: #e9ebf0;
+    line-height: 24px;
+}
+
+#layers .selectize-control.multi .item a {
+    padding-top: 0px;
+    color: #2368AD;
+    transition: color 0.3s;
+}
+
+#layers .selectize-control.multi.plugin-remove_button .item > a:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+#layers .selectize-control.multi .item.active {
+    color: #333;
+}
+
+#layers .selectize-control.multi .selectize-input {
+    padding-bottom: 0px;
+    padding-left: 4px;
+    display: block;
+}
+
+#layers .selectize-input.lu-form-control.lu-tagger {
+    padding-left: 15px;
+}
+
+#layers .selectize-input.lu-form-control.lu-tagger input {
+    height: 26px;
+}
+/* end of selectize css fixes */
+
+/* Breadcumbrs styles */
+#layers .lu-breadcrumb__item:before {
+    padding: 0 2px 0 8px;
+}
+/* End of breadcumbrs styles */
+
+/* Form in tab styles */
+#layers .mg-form-in-tab .ui-form-submit {
+    padding-bottom: 20px;
+}
+
+#layers .mg-form-in-tab .mg-tab-form-wrapper {
+    padding-left: 8px;
+    margin-right: 8px;
+}
+/* End of Form in tab styles */
+
+/* Modal Background */
+#layers .lu-modal.show {
+    background-color: rgba(80, 84, 89, 0.5);
+}
+/* End of Modal Background */
+
+/* Show Allerts on top of new modal background */
+#layers-body #toast-container,
+#layers #toast-container {
+  z-index: 1102;
+}
+/* End of Show Allerts on top of new modal background */
+
+/* force break lines on lu-list--info */
+#layers .lu-list--info .lu-list__value {
+    word-break: break-all;
+}
+/* end of force break lines */
+
+/* Fixes for Category menu AA */
+#layers .lu-app .lu-block__sidebar .lu-widget__header .menu-search-wrapper.is-shown {
+    position: absolute;
+    left: 0;
+    right: 16px;
+    top: 0;
+    bottom: 0;
+    height: auto;
+    min-width: auto;
+    border: none;
+}
+
+#layers .lu-app .lu-block__sidebar .lu-widget__header .menu-search-wrapper:not(.is-shown) {
+    margin-left: 0px;
+}
+
+#layers .lu-app .lu-block__sidebar .lu-widget__header .menu-search-wrapper.is-shown input {
+    padding-left: 0px;
+}
+
+#layers .lu-app .lu-block__sidebar .lu-widget__body .no-groups-found {
+    text-align: center;
+    padding-bottom: 10px;
+}
+/* End of Fixes for Category menu AA */
+
+/* Category Menu Dynamic Content - content */
+#layers #itemContentContainer
+{
+    overflow: unset;
+    overflow-y: visible;
+}
+/* End of Category Menu Dynamic Content - content */
+
+/* Fixes for Tabs widget Form */
+#layers .lu-app .lu-widget__body .mg-tabs-form-wrapper {
+    padding: 16px;
+}
+/* End of Fixes for Tabs widget Form */
+
+/* FormTabsWidget */
+#layers .mg-form-tabs-widget .ui-form-submit {
+    margin-bottom: 16px;
+    padding-left: 16px;
+}
+/* END of FormTabsWidget */
+
+/* Datatable Filters */
+#layers .vueDatatableTable .mg-dt-filters-container .mg-filters-wrapper {
+    padding-top: 10px;
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+#layers .vueDatatableTable .mg-dt-filters-container .mg-filter-search-wrapper a {
+    float: right;
+}
+
+#layers .vueDatatableTable .mg-dt-filters-container .mg-filter-search-wrapper {
+    min-height: 36px;
+}
+/* end of Datatable Filters */
+
+/* Loaders for selectize */
+#layers .mg-selectize-loader {
+    position: absolute;
+    right: 35px;
+}
+/* End of Loaders for selectize */
+
+/* fix this icon is smaller than others */
+.lu-zmdi-assignment-account {
+    margin-top: 1px;
+}
+/* end of fix this icon is smaller than others */
+
+
+/* custom styles */
+
+.image-first-page-configuration {
+    text-align: center;
+}
+.menu-configuration {
+    margin-bottom: 60px;
+    margin-top:10px;
+    overflow: hidden;
+}
+.menu-configuration ul {
+    margin-bottom:0;
+}
+.menu-configuration ul li {
+    float:left;
+    border-right: 1px solid #dadada;
+}
+.menu-configuration ul li:last-child {
+    border-right:none;
+}
+.menu-configuration ul li a {
+    color: #333!important;
+    display: block;
+    padding: 0 15px;
+    font-size: 17px;
+}
+.menu-configuration ul li:first-child a {
+    padding-left: 0;
+}
+.menu-configuration ul li.active a {
+    font-weight: 700;
+}
+.form-first-page-configuration form {
+    margin-top:60px;
+}
+.form-first-page-configuration form .checkbox {
+    text-align: center;
+}
+.form-first-page-configuration form .checkbox input{
+    margin-left: -20px!important;
+    margin-top: 3px!important;
+}
+.form-first-page-configuration form .button-form {
+    text-align: center;
+}
+.form-second-page-configuration input[type="radio"]{
+    margin-left: -20px!important;
+    margin-top: 3px!important;
+}

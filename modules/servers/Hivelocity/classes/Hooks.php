@@ -1,9 +1,9 @@
 <?php
-
 namespace Hivelocity\classes;
 
 class Hooks {
     static function adminActions($params) {
+
         if(isset($_POST["hivelocityAction"]) && !empty($_POST["hivelocityAction"])) {
             $action = $_POST["hivelocityAction"];
         } else {
@@ -21,8 +21,39 @@ class Hooks {
                 echo json_encode($returnArray);
                 die;
             }
+                                    
+        } catch(\Exception $e) {
             
+            $returnArray = array("result" => "error", "message" => $e->getMessage());
+                
+            echo json_encode($returnArray);
             die;
+        }
+    }
+
+    static function adminServiceActions($params) {
+
+        if(isset($_POST["hivelocityAction"]) && !empty($_POST["hivelocityAction"])) {
+            $action = $_POST["hivelocityAction"];
+        } else {
+            return;
+        }
+
+        if($params["id"]) {
+            
+            $serviceId = $params["id"];
+            
+        }
+        
+        try {
+                        
+            if($action == "removeVlan") {
+
+                $vlanid = $_POST["vlanid"];                
+                $returnArray        = Actions::removeVlan($serviceId, $vlanid);
+                echo $returnArray;
+                die;
+            }
             
         } catch(\Exception $e) {
             
@@ -61,7 +92,7 @@ class Hooks {
         }
         
         try {
-        
+
             if($action == "getBandwidth") {
 
                 $period             = $_POST["hivelocityPeriod"];
@@ -74,7 +105,7 @@ class Hooks {
                 $domainName         = $_POST["hivelocityDomainName"];
                 Actions::addDomain($serviceId, $domainName);
             }
-            
+
             if($action == "removeDomain") {
 
                 $hivelocityDomainId = $_POST["hivelocityDomainId"];
@@ -85,6 +116,56 @@ class Hooks {
                 }
                 
                 Actions::removeDomain($serviceId, $hivelocityDomainId);
+            }
+
+            if($action == "addVlan") {
+
+                $type         = $_POST["vlantype"];
+                $facilitycode         = $_POST["facilitycode"];
+                Actions::createVLAN($serviceId,$type, $facilitycode);
+            }
+            
+            if($action == "removeVlan") {
+
+                $vlanid = $_POST["vlanid"];                
+                Actions::removeVlan($serviceId, $vlanid);
+            }
+
+            if($action == "addVlanRoute") {
+
+                $vlanId         = $_POST["routevlanId"];
+                Actions::routeVlan($serviceId,$vlanId);
+            }
+
+            if($action == "addIpRoute") {
+
+                $subnetId         = $_POST["routeip"];
+                Actions::routeIP($serviceId,$subnetId);
+            }
+
+            if($action == "removeVlanrouting") {
+
+                $vlanid = $_POST["vlanid"];                
+                Actions::removeVlanrouting($serviceId, $vlanid);
+            }
+
+            if($action == "removeIprouting") {
+
+                $subnetid = $_POST["subnetid"];                
+                Actions::removeIprouting($serviceId, $subnetid);
+            }
+
+            if($action == "updateInterface") {
+                $action = $_POST["actions"];                
+                Actions::updatePorts($serviceId, $action);
+            }
+
+            if($action == "removeallrouting") {
+                Actions::removeAllRouting($serviceId);
+            }
+
+            if($action == "requestIps") {
+                Actions::requestIps($serviceId,$_POST);
             }
             
             if($action == "addRecord") {
@@ -208,6 +289,12 @@ class Hooks {
 
                 $ip             = $_POST["hivelocityIp"];
                 Actions::allowIp($serviceId, $ip);
+            }
+
+            if($action == "changePowerstatus") {
+
+                $status             = $_POST["status"];
+                Actions::changePowerStatus($serviceId, $status);
             }
             
         } catch (\Exception $e) {
@@ -478,14 +565,14 @@ SCRIPT;
         
         foreach($expectedOptions as $optionName) {
 
-            if($optionName=="Add user data" || $optionName=="Customize SSH Key Access")
+            /*if($optionName=="Add user data" || $optionName=="Customize SSH Key Access")
             {
                 $configOptionFieldIds[$optionName] =  'inputConfigOption'.Helpers::getConfigOptionIdByOption($optionName);
             }
             else
-            {
+            {*/
                 $configOptionFieldIds[$optionName] =  'inputConfigOption'.Helpers::getConfigOptionId($configOptionGroupId, $optionName);
-            }
+            //}
             
         }
 
@@ -507,9 +594,9 @@ SCRIPT;
         
         $script = <<<SCRIPT
             <script>
-                var productId = '$productId';
+                var productId = '$productId'; 
                 var hivelocityConfigOptionFieldsIdsJson = '$configOptionFieldIdsJson';
-                var hivelocityCustomFieldIdsJson = '$customFieldIdsJson';
+                var hivelocityCustomFieldIdsJson = '$customFieldIdsJson'; 
                 var hivelocityLocationAvailability      = '$locationAvailabilityJson';
             </script>
             <script src="modules/servers/Hivelocity/templates/js/modifyCartConfProductPage.js" type="text/javascript"></script>

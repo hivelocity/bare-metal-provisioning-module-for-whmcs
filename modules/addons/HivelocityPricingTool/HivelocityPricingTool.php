@@ -27,6 +27,16 @@ function HivelocityPricingTool_activate() {
         );
     }
 
+    if (!Capsule::schema()->hasTable('HivelocityProductPrices')) {
+        Capsule::schema()->create(
+            'HivelocityProductPrices',
+            function ($table) {
+                $table->integer('hivelocityProductId');
+                $table->string('hivelocityProductPrice');
+            }
+        );
+    }
+
     insert_query("mod_hivelocity_cron",array("value"=>'RunFiveMinCron',"created_at"=>date('Y-m-d h:i:s')));
 
 }

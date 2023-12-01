@@ -315,7 +315,7 @@ class Actions {
         echo $returnJson;
         die;
     }
-    
+
     static public function removeDomain($serviceId, $hivelocityDomainId) {
         
         $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
@@ -339,7 +339,261 @@ class Actions {
         echo $returnJson;
         die;
     }
+
+    static public function createVLAN($serviceId, $type,$code) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::createVLAN($type, $code); // 45.158.37.216/29
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $ports= Api::getPorts($assignedDeviceId);
+        foreach ($ports as $key => $value) {
+            if($value['type']=='Bond Interface')
+                $portarr[]=$value['portId'];
+        }
+
+        //$res=Api::modifyVLAN(array('portIds' => $portarr,'ipIds' => array()),$response['vlanId']);
+        ///$res=Api::Bond($assignedDeviceId);
+        $return     = array(
+            "result"                => "success",
+            "response"            => $response,
+        );
+        logModuleCall('createVLAN',$serviceId,$res,$response);
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
     
+    static public function removeVlan($serviceId, $vlanid) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::removeVLAN($vlanid);
+                 
+        $return     = array(
+            "result"                => "success",
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
+    static public function routeVlan($serviceId, $vlanId) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $ports= Api::getPorts($assignedDeviceId);
+        foreach ($ports as $key => $value) {
+            if($value['type']=='Bond Interface')
+                $portarr[]=$value['portId'];
+        }
+
+        $response=Api::modifyVLAN(array('portIds' => $portarr,'ipIds' => array()),$vlanId);
+        ///$res=Api::Bond($assignedDeviceId);
+        $response=json_decode($response['metaData']);
+        $vlan=Api::getVLAN($response->vlan_id);
+        $res['vlanid']=$response->vlan_id;
+        $res['vlan']='VLAN Tag #'.$vlan['vlanTag'].' '.$vlan['facilityCode'];
+
+        $return     = array(
+            "result"                => "success",
+            "response"            => $res,
+        );
+        logModuleCall('routeVlan',$serviceId,$return,$response);
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
+    static public function removeVlanrouting($serviceId, $vlanid) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::clearVlanConfiguration($vlanid);
+
+        $vlan=Api::getVLAN($vlanid);
+        $res['vlanid']=$vlanid;
+        $res['vlan']='VLAN Tag #'.$vlan['vlanTag'].' '.$vlan['facilityCode'];
+                 
+        $return     = array(
+            "result"                => "success",
+            "response"            => $res,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
+    static public function updatePorts($serviceId, $action) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $enabled='true';
+        if($action=='Disable')
+            $enabled='false';
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $response           = Api::updatePorts($assignedDeviceId,$enabled);
+
+        $return     = array(
+            "result"                => "success",
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
+    static public function routeIP($serviceId, $subnetId) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $enabled='true';
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $response           = Api::updatePorts($assignedDeviceId,$enabled,array($subnetId));
+
+        //$vlan=Api::getVLAN($subnetId);
+        $res['subnetid']=$subnetId;
+        //$res['subnet']='VLAN Tag #'.$vlan['vlanTag'].' '.$vlan['facilityCode'];
+        $res['subnet']='45.158.37.216/29';
+
+        $return     = array(
+            "result"                => "success",
+            "response"            => $res,
+        );
+
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
+    static public function removeIprouting($serviceId, $subnetid) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $enabled='true';
+        $response           = Api::updatePorts($assignedDeviceId,$enabled,array());
+
+        //$vlan=Api::getVLAN($subnetid);
+        $res['subnetid']=$subnetid;
+        $res['subnet']='45.158.37.216/29'; 
+                 
+        $return     = array(
+            "result"                => "success",
+            "response"            => $res,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+    
+    static public function removeAllRouting($serviceId) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $vlanList= Api::getVLANList();
+
+        foreach ($vlanList as $key => $value) {
+            if($value['portIds'])
+            {
+                $response = Api::clearVlanConfiguration($value['vlanId']);
+                $res[]='<option value="'.$value['vlanId'].'">VLAN Tag #'.$value['vlanTag'].' '.$value['facilityCode'].'</option>';
+            }
+        }
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        $enabled='true';
+        $response           = Api::updatePorts($assignedDeviceId,$enabled,array());
+                         
+        $return     = array(
+            "result"                => "success",
+            "response"            => $res,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
+    static public function requestIps($serviceId, $post) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $response           = Api::requestIps($post);
+
+        $return     = array(
+            "result"                => "success",
+            "response"            => $response,
+        );
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+    }
+
     static public function addRecord($serviceId, $hivelocityDomainId, $hivelocityRecordType, $hivelocityRecordData) {
         
         $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
@@ -478,6 +732,41 @@ class Actions {
         $return     = array(
             "result"                => "success",
             "ipmiPageIp"            => $response,
+        );
+        
+        $returnJson = json_encode($return);
+        echo $returnJson;
+        die;
+        
+    }
+
+    static public function changePowerStatus($serviceId, $status) {
+        
+        $serviceUserId      = Helpers::getUserIdByServiceId($serviceId);
+        $productId          = Helpers::getProductIdByServiceId($serviceId);
+        
+        $serverConfig       = Helpers::getServerConfigByProductId($productId);
+        $apiUrl             = $serverConfig["hostname"];
+        $apiKey             = $serverConfig["accesshash"];
+        
+        Api::setApiDetails($apiUrl, $apiKey);
+        
+        $assignedDeviceId   = Helpers::getAssignedDeviceId($serviceId);
+        
+        if($status=='POWER ON')
+        {
+            $response       = Api::bootDevice($assignedDeviceId);
+        }
+        elseif($status=='POWER OFF')
+        {
+            $response       = Api::shutdownDevice($assignedDeviceId);
+        }
+        
+       
+        
+        $return     = array(
+            "result"                => "success",
+            "response"            => $response,
         );
         
         $returnJson = json_encode($return);

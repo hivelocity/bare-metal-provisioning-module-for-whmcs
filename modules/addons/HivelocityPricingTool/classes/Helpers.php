@@ -315,11 +315,77 @@ class Helpers {
         $productId  = intval($productId);
         
         $pdo        = Capsule::connection()->getPdo();
+
         $pdo->beginTransaction();
-        $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly) VALUES ('product', $productId, 'hivelocityDeviceId|Device ID', 'text', 'on')";
+        $query      = "SELECT * FROM tblcustomfields WHERE type='product' AND fieldname='hivelocityDeviceId|Device ID' AND fieldtype='text' AND relid =".$productId;
         $statement  = $pdo->prepare($query);
         $statement->execute();
+        $row4        = $statement->fetch();
         $pdo->commit();
+
+        if(!$row4["id"] || empty($row4["id"])) {
+
+            $pdo->beginTransaction();
+            $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly,showorder,description) VALUES ('product', $productId, 'hivelocityDeviceId|Device ID', 'text', 'on','','')";
+            
+            $statement  = $pdo->prepare($query);
+            $statement->execute();
+            $pdo->commit();
+        }
+        
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblcustomfields WHERE type='product' AND fieldname='init' AND fieldtype='textarea' AND relid =".$productId;
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $row1        = $statement->fetch();
+        $pdo->commit();
+
+        if(!$row1["id"] || empty($row1["id"])) {
+            
+            $pdo->beginTransaction();
+            $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly,showorder,description) VALUES ('product', $productId, 'init', 'textarea', '','on','Use this to execute script/package tasks  or trigger more advanced configuration processes after the server is ready.Paste YML or your script here. Hivelocity Bare Metal supports cloud-init config and post-install scripts that run automatically at provisioning time.Deploy your applications programmatically on top of our Bare Metal devices.
+    Cloud-init config start with #cloud-config, must be a valid YAML script.Post-install scripts start with #!/bin/bash.
+    This script should not be base64 encoded.')";
+            
+            $statement  = $pdo->prepare($query);
+            $statement->execute();
+            $pdo->commit();
+        }
+
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblcustomfields WHERE type='product' AND fieldname='SSH Key Content' AND fieldtype='textarea' AND relid =".$productId;
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $row2        = $statement->fetch();
+        $pdo->commit();
+
+        if(!$row2["id"] || empty($row2["id"])) {
+            
+            $pdo->beginTransaction();
+            $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly,showorder,description) VALUES ('product', $productId, 'SSH Key Content', 'textarea', '','on','')";
+            
+            $statement  = $pdo->prepare($query);
+            $statement->execute();
+            $pdo->commit();
+        }
+
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblcustomfields WHERE type='product' AND fieldname='Name' AND fieldtype='text' AND relid =".$productId;
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $row3        = $statement->fetch();
+        $pdo->commit();
+
+        if(!$row3["id"] || empty($row3["id"])) {
+            
+            $pdo->beginTransaction();
+            $query      = "INSERT INTO tblcustomfields (type, relid, fieldname, fieldtype, adminonly,showorder,description) VALUES ('product', $productId, 'Name', 'text', '','on','')";
+            
+            $statement  = $pdo->prepare($query);
+            $statement->execute();
+            $pdo->commit();
+        }
+
     }
     
     static public function hideProduct($productId) {
@@ -568,9 +634,16 @@ class Helpers {
         
         $pdo        = Capsule::connection()->getPdo();
         $pdo->beginTransaction();
-        $query      = "INSERT INTO tblproductconfigoptions (gid, optionname, optiontype) VALUES (?, ?, 1)";
+
+        $optiontype=1;
+        if (in_array($name, array("Add user data", "Customize SSH Key Access")))
+        {
+            $optiontype=3;
+        }
+
+        $query      = "INSERT INTO tblproductconfigoptions (gid, optionname, optiontype) VALUES (?, ?, ?)";
         $statement  = $pdo->prepare($query);
-        $statement->execute([$groupId, $name]);
+        $statement->execute([$groupId, $name, $optiontype]);
         $pdo->commit();
     }
     
@@ -764,7 +837,8 @@ class Helpers {
         //------------------------------------------------------------------------------
         
         $remoteProductOptions   = Helpers::filterProductOptions($remoteProductOptions);
-        
+        $cnt=6;
+
         foreach($remoteProductOptions as $optionName => $subOptions) {
             
             $configOptionId = Helpers::getConfigOptionId($configOptionsGroupId, $optionName);
@@ -776,10 +850,14 @@ class Helpers {
             
             //Helpers::clearConfigOptionSub($configOptionId);
             $processedSubOptions    = array();
-            
+            $count=0;
             foreach($subOptions as $subOption) {
                 
                 $name               = $subOption["id"]."|".$subOption["name"];
+
+                if(!$count)
+                    Helpers::updateProductConfigOption($productId,$cnt,$subOption["id"]);
+                
                 $configOptionSubId  = Helpers::getConfigOptionSubId($configOptionId, $name);
                 
                 if($configOptionSubId == false) {
@@ -802,6 +880,8 @@ class Helpers {
                     Helpers::setConfigOptionPrice($configOptionSubId, $priceConverted, $currencyId);
                 }
                 $processedSubOptions[]  = $configOptionSubId;
+
+                $count++;
             }
             
             $localConfigOptionSubList   = Helpers::getConfigOptionSubList($configOptionId);
@@ -821,6 +901,8 @@ class Helpers {
             }
             
             $processedOptions[]     = $configOptionId;
+
+            $cnt++;
         }
         
         $localConfigOptionList   = Helpers::getConfigOptionList($configOptionsGroupId);
@@ -866,6 +948,9 @@ class Helpers {
             }
         }
         
+        $filteredOptions['Add user data'] = 'Add user data';
+        $filteredOptions['Customize SSH Key Access'] = 'Customize SSH Key Access';
+
         return $filteredOptions;
     }
     
@@ -1179,6 +1264,18 @@ class Helpers {
         } else {
             return false;
         }
+    }
+
+    static public function updateProductConfigOption($productId,$configId,$value) {
+        
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproducts SET configoption".$configId." = '".$value."' WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$productId]);
+        $pdo->commit();
     }
     
 }

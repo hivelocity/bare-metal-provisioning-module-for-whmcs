@@ -12,6 +12,35 @@ class Api {
         self::$apiUrl   = "https://".$apiUrl."/api/v2/";
         self::$apiKey   = $apiKey;
     }
+
+    static public function GetIonCubeLoaderVersion() {
+        
+        ob_start();
+        phpinfo(INFO_GENERAL);
+        $aux = str_replace('&nbsp;', ' ', ob_get_clean());
+        if($aux !== false)
+        {
+            $pos = mb_stripos($aux, 'ionCube PHP Loader');
+            if($pos !== false)
+            {
+                $aux = mb_substr($aux, $pos + 18);
+                $aux = mb_substr($aux, mb_stripos($aux, ' v') + 2);
+
+                $version = '';
+                $c = 0;
+                $char = mb_substr($aux, $c++, 1);
+                while(mb_strpos('0123456789.', $char) !== false)
+                {
+                    $version .= $char;
+                    $char = mb_substr($aux, $c++, 1);
+                }
+
+                return $version;
+            }
+        }
+
+        return false;
+    }
     
     static public function sendRequest($resource, $httpMethod = 'GET', $postFields = array(), $postInQuery = false) {
         
@@ -41,13 +70,22 @@ class Api {
         //curl_setopt($ch, CURLOPT_COOKIEJAR,         __DIR__."/q/jar");
         //curl_setopt($ch, CURLOPT_COOKIEFILE,        __DIR__."/q/file");
         
+        $user_agent = 'PHP-Curl-Class/4.10.0(+https://github.com/php-curl-class/php-curl-class)';
+        $user_agent .= ' PHP/' . PHP_VERSION;
+        $curl_version = curl_version();
+        $user_agent .= ' curl/' . $curl_version['version'];
+        $modulev=Addon::config();
+        $user_agent .= ' WHMCSAddonModule/'.$modulev['version'];
+        $ioncubev = self::GetIonCubeLoaderVersion();
+        $user_agent .= ' ioncube/'.$ioncubev;
+        $user_agent .= ' ServerIP/'.$_SERVER['SERVER_ADDR'];
+
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 "Content-Type: application/json",
-                "User-Agent: PostmanRuntime/7.26.8",
+                "User-Agent: ".$user_agent,
                 "Accept: */*",
                 "Accept-Encoding: ''",
-                "X-API-KEY: $apiKey",
-                "Referer: WHMCS"
+                "X-API-KEY: $apiKey"
         ));
         
         $response   = curl_exec($ch);

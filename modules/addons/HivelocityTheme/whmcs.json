@@ -1,0 +1,20 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-addons",
+  "name": "HivelocityTheme",
+  "license": "proprietary",
+  "description": {
+    "name": "Theme Editor (Beta)",
+    "tagline": "Customize themes with our evolving, feature-rich editor in beta. Stay tuned for updates.",
+    "long": "Dive into the Theme Editor, currently in beta, where we are continually enhancing and expanding its feature set to bring you a more comprehensive theme customization experience. Stay tuned for updates as we work diligently to provide you with a seamless theme editing solution."
+  },
+  "logo": {
+    "filename": "assets/img/hilogo.png"
+  },
+  "authors": [
+    {
+      "name": "WHMCS",
+      "homepage": "https:\/\/www.whmcs.com\/"
+    }
+  ]
+}

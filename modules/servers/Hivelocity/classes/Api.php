@@ -9,10 +9,39 @@ class Api {
         
         $apiUrl = str_replace("DOT", ".", $apiUrl);
         
-        self::$apiUrl   = "https://".$apiUrl."/api/v2/";
+        self::$apiUrl   = "https://".$apiUrl."/api/v2";
         self::$apiKey   = $apiKey;
     }
-    
+
+    static public function GetIonCubeLoaderVersion() {
+        
+        ob_start();
+        phpinfo(INFO_GENERAL);
+        $aux = str_replace('&nbsp;', ' ', ob_get_clean());
+        if($aux !== false)
+        {
+            $pos = mb_stripos($aux, 'ionCube PHP Loader');
+            if($pos !== false)
+            {
+                $aux = mb_substr($aux, $pos + 18);
+                $aux = mb_substr($aux, mb_stripos($aux, ' v') + 2);
+
+                $version = '';
+                $c = 0;
+                $char = mb_substr($aux, $c++, 1);
+                while(mb_strpos('0123456789.', $char) !== false)
+                {
+                    $version .= $char;
+                    $char = mb_substr($aux, $c++, 1);
+                }
+
+                return $version;
+            }
+        }
+
+        return false;
+    }
+
     static public function sendRequest($resource, $httpMethod = 'GET', $postFields = array(), $postInQuery = false) {
         
         $apiKey = self::$apiKey;
@@ -30,6 +59,16 @@ class Api {
             }
         }
         
+        $user_agent = 'PHP-Curl-Class/4.10.0(+https://github.com/php-curl-class/php-curl-class)';
+        $user_agent .= ' PHP/' . PHP_VERSION;
+        $curl_version = curl_version();
+        $user_agent .= ' curl/' . $curl_version['version'];
+        $modulev=Addon::getMetaData();
+        $user_agent .= ' WHMCSModule/'.$modulev['APIVersion'];
+        $ioncubev = self::GetIonCubeLoaderVersion();
+        $user_agent .= ' ioncube/'.$ioncubev;
+        $user_agent .= ' ServerIP/'.$_SERVER['SERVER_ADDR'];
+
         curl_setopt($ch, CURLOPT_URL,               $url);
         curl_setopt($ch, CURLOPT_FAILONERROR,       false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,    0);
@@ -42,11 +81,10 @@ class Api {
         
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 "Content-Type: application/json",
-                "User-Agent: PostmanRuntime/7.26.8",
+                "User-Agent: ".$user_agent,
                 "Accept: */*",
                 "Accept-Encoding: ''",
-                "X-API-KEY: $apiKey",
-                "Referer: WHMCS"
+                "X-API-KEY: $apiKey"
         ));
         
         $response   = curl_exec($ch);
@@ -68,7 +106,13 @@ class Api {
                 "Json"      => !empty($postJson)?$postJson:"",
                 "Query"     => !empty($postQuery)?$postQuery:"",
             );
-            logModuleCall("Hivelocity", $action, $request, "", $response);
+
+            /*if($resource=='/billing-info/')
+            {
+                $response='{"response":"success"}';
+            }*/
+
+            logModuleCall("Hivelocity", $url, $request, "", $response);
         }
         //debug
         
@@ -244,6 +288,7 @@ class Api {
             "hostnames"         => array($hostName),
             "productId"         => $productId,
             "options"           => $options,
+            "quantity"           => '1',
         );
         /*
         if(!empty($panelId)) {
@@ -589,5 +634,157 @@ class Api {
             }
         }
         return $productListParsed;
+    }
+
+    static public function customapi($data) {
+              
+        $resource   = "/bare-metal-devices/";
+                
+        $response   = self::sendRequest($resource, "POST", $data);
+        
+        return $response;
+    }
+
+    static public function createVLAN($type, $facilityCode) {
+        
+        $resource   = "/vlan/";
+        
+        $postFields = array(
+            "facilityCode" => $facilityCode,
+            "type" => $type,
+        );
+        
+        $response   = self::sendRequest($resource, "POST", $postFields);
+        
+        return $response;
+    }
+
+    static public function getVLANList() {
+        
+        $resource = "/vlan/";
+        $response = self::sendRequest($resource);
+        
+        return $response;
+    }
+
+    static public function getVLAN($vlanId) {
+        
+        $resource = "/vlan/$vlanId";
+        $response = self::sendRequest($resource);
+        
+        return $response;
+    }
+
+    static public function modifyVLAN($data,$vlanId) {
+        
+        $resource = "/vlan/$vlanId";
+        $response = self::sendRequest($resource, "PUT", $data);
+        return $response;
+    }
+
+    static public function removeVLAN($vlanId) {
+        
+        $resource   = "/vlan/$vlanId";
+        $response   = self::sendRequest($resource, "DELETE");
+        
+        return $response;
+    }
+
+    static public function clearVlanConfiguration($vlanId) {
+        
+        $resource   = "/vlan/$vlanId/clear";
+        $response   = self::sendRequest($resource, "POST");
+        
+        return $response;
+    }
+
+    static public function getLocations() {
+        
+        $resource = "/inventory/locations";
+        $response = self::sendRequest($resource);
+        
+        return $response;
+    }
+
+    static public function getPorts($deviceId) {
+        
+        $resource = "/device/$deviceId/ports";
+        $response = self::sendRequest($resource);
+        
+        return $response;
+    }
+
+    static public function updatePorts($deviceId,$enabled,$ips=array()) {
+        
+        $resource = "/device/$deviceId/ports";
+
+        $ports= self::getPorts($deviceId);
+        foreach ($ports as $key => $value) {
+            if($value['type']=='Bond Interface')
+                $portarr=$value['portId'];
+        }
+
+        $data['ports'][]=array('portId' => $portarr,'enabled' => $enabled,'ipAssignments'=>$ips);
+
+        $response = self::sendRequest($resource, "PUT", $data);
+        
+        return $response;
+    }
+
+    static public function Unbond($deviceId) {
+        
+        $resource   = "/device/$deviceId/ports/bond";
+        $response   = self::sendRequest($resource, "DELETE");
+        
+        return $response;
+    }
+
+    static public function Bond($deviceId) {
+        
+        $resource   = "/device/$deviceId/ports/bond";
+        $response   = self::sendRequest($resource, "POST");
+        
+        return $response;
+    }
+
+    static public function getAvailableIps() {
+        
+        $resource = "/ip/";
+        
+        $response = self::sendRequest($resource);
+        
+        return $response;
+    }
+
+    static public function getAllEvents($deviceId) {
+        
+        $resource = "/network/status/$deviceId";
+        //$resource = "/network/status";            not getting response 
+        
+        $response = self::sendRequest($resource);
+        
+        return $response;
+    }
+
+    static public function requestIps($post) {
+        
+        $resource   = "/ip";
+        
+        $postFields = array(
+            //"device_id" => $post['device_id'],
+            "prefixLength" => $post['number_requested'],
+            "purpose" => $post['purpose'],
+        );
+        
+        $response   = self::sendRequest($resource, "POST", $postFields);
+        
+        return $response;
+    }
+
+    static public function getAllSSHkeys() {
+        
+        $resource = "/ssh_key";
+        $response = self::sendRequest($resource);
+        return $response;
     }
 }

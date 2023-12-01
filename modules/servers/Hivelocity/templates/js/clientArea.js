@@ -1,8 +1,18 @@
 $(document).ready(function() {
 
     addEventAddDomain();
+    addEventAddVlan();
+    addEventAddVlanRoute();
+    addEventRemoveVlan();
+    addEventRemoveRoutedVlan();
+    addEventupdateInterface();
+    addEventRemoveAllRouting();
+    addEventAddIPRoute();
+    addEventRemoveRoutedIp();
+    addEventRequestIps();
     addEventRemoveDomain();
     addEventAllowIp();
+    addEventPowerStatus();
     addEventOpenLoginPage();
     addEventVpnHelp();
     addEventShowIpmiModal();
@@ -65,6 +75,7 @@ function addEventAddDomain() {
         hideErrors();
         var button = $(this);
         button.attr('disabled', 'disabled');
+        //$('#domainListTable').removeClass('table');
         $.post({
             type: "POST",
             url: "",
@@ -73,10 +84,16 @@ function addEventAddDomain() {
             button.removeAttr("disabled");
             var data = jQuery.parseJSON(dataJson);
             if(data.result == "success") {
+                $('#tabDns .container .row').first().append('<div class="alert alert-success">Record Added Successfully</div>');
+                
+                setTimeout(function() {
+                    $('#tabDns .container .row .alert').css("display","none");
+                }, 10000);
+
                 var html = ' <tr>' +
                            '    <td style="width:100%; text-align: left">' + data.domainName + '</td>' +
                            '     <td>' +
-                           '         <button type="button" class="btn btn-primary" data-toggle="modal" data-domain-id="' + data.hivelocityDomainId + '" data-target="#dnsModal">' +
+                           '         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-domain-id="' + data.hivelocityDomainId + '" data-target="#dnsModal">' +
                            '             DNS&nbsp;Records' +
                            '         </button>' +
                            '     </td>' +
@@ -84,17 +101,194 @@ function addEventAddDomain() {
                            '         <form id="addDomainForm" class="form-inline">' +
                            '             <input type="hidden" name="hivelocityAction"    value="removeDomain">' +
                            '             <input type="hidden" name="hivelocityDomainId"  value="' + data.hivelocityDomainId + '" class="form-control" style="margin-right: 10px">' +
-                           '             <button class="removeDomainButton btn btn-danger">Remove</button>' +
+                           '             <button class="removeDomainButton btn btn-sm btn-danger">Remove</button>' +
                            '         </form>' +
                            '     </td>' +
                            ' </tr>';
-                $('#domainListTable').append(html);
+                $('#domainListTable tbody').append(html);
                 addEventRemoveDomain();
+            } else {
+
+                if(data.message != "Action Failed") {
+                    $('#tabDns .container .row').first().append('<div class="alert alert-danger">'+data.message+'</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabDns .container .row .alert').css("display","none");
+                    }, 10000);
+
+                } else {
+                    $('#tabDns .container .row').first().append('<div class="alert alert-danger">Failed to create domain.</div>');
+                
+                    setTimeout(function() {
+                        $('#tabDns .container .row .alert').css("display","none");
+                    }, 10000);
+
+                }
+               
+            }
+        });
+    });
+}
+
+function addEventAddVlan() {
+    $('#addVlanButton').off('click');
+    $('#addVlanButton').click(function(event) {
+        event.preventDefault();
+        hideErrors();
+        var button = $(this);
+        button.attr('disabled', 'disabled');
+        //$('#vlanListTable').removeClass('table');
+        $.post({
+            type: "POST",
+            url: "",
+            data: $('#addVlanForm').serialize(),
+        }).done(function(dataJson) {
+            button.removeAttr("disabled");
+            var data = jQuery.parseJSON(dataJson);
+            if(data.result == "success") { // response
+                $('#tabVlan .container .row').first().append('<div class="alert alert-success">Record Added Successfully</div>');
+                
+                setTimeout(function() {
+                    $('#tabVlan .container .row .alert').css("display","none");
+                }, 10000);
+
+                var html = ' <tr>' +
+                           '    <td style="text-align: center">#' + data.response.vlanId + '</td>' +
+                           '    <td style="text-align: center">VLAN Tag #' + data.response.vlanTag + '</td>' +
+                           '    <td style="text-align: center">' + data.response.facilityCode + '</td>' +
+                           '    <td style="text-align: center">' + data.response.type + '</td>' +
+                           '     <td>' +
+                           '         <form id="addVlanForm" class="">' +
+                           '             <input type="hidden" name="hivelocityAction"    value="removeVlan">' +
+                           '             <input type="hidden" name="vlanid"  value="' + data.response.vlanId + '" class="form-control" style="margin-right: 10px">' +
+                           '             <center><button class="removeVlanButton btn btn-sm btn-danger">Remove</button></center>' +
+                           '         </form>' +
+                           '     </td>' +
+                           ' </tr>';
+                $('#vlanListTable tbody').append(html);
+                addEventRemoveVlan();
+            } else {
+                if(data.message != "Action Failed") {
+                    $('#tabVlan .container .row').first().append('<div class="alert alert-danger">'+data.message+'</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabVlan .container .row .alert').css("display","none");
+                    }, 10000);
+
+                } else {
+                    $('#tabVlan .container .row').first().append('<div class="alert alert-danger">Failed to create vlan.</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabVlan .container .row .alert').css("display","none");
+                    }, 10000);
+                }
+               
+            }
+        });
+    });
+}
+
+function addEventAddVlanRoute() {
+    $('#addVlanRoute').off('click');
+    $('#addVlanRoute').click(function(event) { 
+        event.preventDefault();
+        hideErrors();
+        var button = $(this);
+        button.attr('disabled', 'disabled');
+        $.post({
+            type: "POST",
+            url: "",
+            data: $('#addVlanRouteForm').serialize(),
+        }).done(function(dataJson) {
+            $('#vlanRouteListTable').show();
+            button.removeAttr("disabled");
+            var data = jQuery.parseJSON(dataJson); 
+            if(data.result == "success") { 
+                var html = ' <tr>' +
+                           '    <td style="text-align: center">' + data.response.vlan + '</td>' +
+                           '     <td>' +
+                           '         <form id="" class="">' +
+                           '             <input type="hidden" name="hivelocityAction"    value="removeVlanrouting">' +
+                           '             <input type="hidden" name="vlanid"  value="' + data.response.vlanid + '" class="form-control" style="margin-right: 10px">' +
+                           '             <center><button class="removeVlanrouting btn btn-sm btn-danger">Remove</button></center>' +
+                           '         </form>' +
+                           '     </td>' +
+                           ' </tr>';
+
+                $('#successmsg').css("display","block");
+                $('#successmsg').text("Request Successfully Submitted.");
+                setTimeout(function() {
+                    $('#successmsg').css("display","none");
+                }, 3000);
+
+                $('#interfacetask').css("display","block");
+                $('#interfacetask').text("Account has 1 queued network tasks. Changes to this interface are disabled until the tasks complete. Estimated time: 30 seconds");
+                setTimeout(function() {
+                    $('#interfacetask').css("display","none");
+                }, 10000);
+
+                $('#vlanRouteListTable tbody').append(html);
+                $('.routevlanIdselect option[value="'+data.response.vlanid+'"]').remove();
+                addEventRemoveRoutedVlan();
+            } else { 
+                if(data.message != "Action Failed") {
+                    displayError("Main", data.message);
+                } else {
+                    displayError("Main",  "Failed to Route Vlan.");
+                }
+               
+            }
+        });
+    });
+}
+
+function addEventAddIPRoute() {
+    $('#addIpRoute').off('click');
+    $('#addIpRoute').click(function(event) { 
+        event.preventDefault();
+        hideErrors();
+        var button = $(this);
+        button.attr('disabled', 'disabled');
+        $.post({
+            type: "POST",
+            url: "",
+            data: $('#addIpRouteForm').serialize(),
+        }).done(function(dataJson) {
+            $('#ipRouteListTable').show();
+            button.removeAttr("disabled");
+            var data = jQuery.parseJSON(dataJson); 
+            if(data.result == "success") { 
+                var html = ' <tr>' +
+                           '    <td style="text-align: center">' + data.response.subnet + '</td>' +
+                           '     <td>' +
+                           '         <form id="" class="">' +
+                           '             <input type="hidden" name="hivelocityAction"    value="removeIprouting">' +
+                           '             <input type="hidden" name="subnetid"  value="' + data.response.subnetid + '" class="form-control" style="margin-right: 10px">' +
+                           '             <center><button class="removeIprouting btn btn-sm btn-danger">Remove</button></center>' +
+                           '         </form>' +
+                           '     </td>' +
+                           ' </tr>';
+
+                $('#successmsg').css("display","block");
+                $('#successmsg').text("Request Successfully Submitted.");
+                setTimeout(function() {
+                    $('#successmsg').css("display","none");
+                }, 3000);
+
+                $('#interfacetask').css("display","block");
+                $('#interfacetask').text("Account has 1 queued network tasks. Changes to this interface are disabled until the tasks complete. Estimated time: 30 seconds");
+                setTimeout(function() {
+                    $('#interfacetask').css("display","none");
+                }, 10000);
+
+                $('#ipRouteListTable tbody').append(html);
+                $('.routeipselect option[value="'+data.response.subnetid+'"]').remove();
+                addEventRemoveRoutedIp();
             } else {
                 if(data.message != "Action Failed") {
                     displayError("Main", data.message);
                 } else {
-                    displayError("Main",  "Failed to create domain.");
+                    displayError("Main",  "Failed to Route IP.");
                 }
                
             }
@@ -104,23 +298,326 @@ function addEventAddDomain() {
 
 function addEventRemoveDomain() {
     $('.removeDomainButton').off('click');
-    $('.removeDomainButton').click(function(event) {
+    $('.removeDomainButton').click(function(event) { 
+        event.preventDefault();
+        hideErrors();
+        if(confirm('Are you sure you want to delete?')){
+            var button  = $(this);
+            var form    = $(this).parent().parent();
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: form.serialize(),
+            }).done(function(dataJson) {
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+                    $('#tabDns .container .row').first().append('<div class="alert alert-success">Record Deleted</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabDns .container .row .alert').css("display","none");
+                    }, 10000);
+
+                    button.closest("tr").remove();
+                } else {
+                    $('#tabDns .container .row').first().append('<div class="alert alert-danger">Failed to remove domain.</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabDns .container .row .alert').css("display","none");
+                    }, 10000);
+                }
+            });
+        }
+    });
+}
+
+function addEventRemoveVlan() {
+    $('.removeVlanButton').off('click');
+    $('.removeVlanButton').click(function(event) {
+        event.preventDefault();
+        hideErrors();
+        if(confirm('Are you sure you want to delete?')){
+            var button  = $(this);
+            var form    = $(this).parent().parent();
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: form.serialize(),
+            }).done(function(dataJson) {
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+                    $('#tabVlan .container .row').first().append('<div class="alert alert-success">Record Deleted</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabVlan .container .row .alert').css("display","none");
+                    }, 10000);
+
+                    button.closest("tr").remove();
+                } else {
+                    displayError("Main", "Failed to remove vlan.");
+                    $('#tabVlan .container .row').first().append('<div class="alert alert-danger">Failed to remove vlan.</div>');
+                    
+                    setTimeout(function() {
+                        $('#tabVlan .container .row .alert').css("display","none");
+                    }, 10000);
+                }
+            });
+        }
+    });
+}
+
+function addEventRemoveRoutedVlan() {
+    $('.removeVlanrouting').off('click');
+    $('.removeVlanrouting').click(function(event) {
         event.preventDefault();
         hideErrors();
         var button  = $(this);
-        var form    = $(this).parent();
+        var form    = $(this).parent().parent();
+        if(confirm('Are you sure you want to remove the Port from this VLAN?'))
+        {                                
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: form.serialize(),
+            }).done(function(dataJson) {
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+
+                    $('#successmsg').css("display","block");
+                    $('#successmsg').text("Request Successfully Submitted.");
+                    setTimeout(function() {
+                        $('#successmsg').css("display","none");
+                    }, 3000);
+
+                    $('#interfacetask').css("display","block");
+                    $('#interfacetask').text("Account has 1 queued network tasks. Changes to this interface are disabled until the tasks complete. Estimated time: 30 seconds");
+                    setTimeout(function() {
+                        $('#interfacetask').css("display","none");
+                    }, 10000);
+
+                    button.closest("tr").remove();
+                    var mySelect = $('.routevlanIdselect');
+                    var val = data.response.vlanid;
+                    var text = data.response.vlan;
+                    mySelect.append($('<option></option>').val(val).html(text));
+                } else {
+                    displayError("Main", "Failed to remove routed vlan.");
+                }
+            });
+        }
+    });
+}
+
+function addEventRemoveRoutedIp() {
+    $('.removeIprouting').off('click');
+    $('.removeIprouting').click(function(event) {
+        event.preventDefault();
+        hideErrors();
+        var button  = $(this);
+        var form    = $(this).parent().parent();
+        if(confirm('Are you sure you want to remove the IP from this Port?'))
+        {                                
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: form.serialize(),
+            }).done(function(dataJson) {
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+
+                    $('#successmsg').css("display","block");
+                    $('#successmsg').text("Request Successfully Submitted.");
+                    setTimeout(function() {
+                        $('#successmsg').css("display","none");
+                    }, 3000);
+
+                    $('#interfacetask').css("display","block");
+                    $('#interfacetask').text("Account has 1 queued network tasks. Changes to this interface are disabled until the tasks complete. Estimated time: 30 seconds");
+                    setTimeout(function() {
+                        $('#interfacetask').css("display","none");
+                    },10000);
+
+                    button.closest("tr").remove();
+                    var mySelect = $('.routeipselect');
+                    var val = data.response.subnetid;
+                    var text = data.response.subnet;
+                    mySelect.append($('<option></option>').val(val).html(text));
+                } else {
+                    displayError("Main", "Failed to remove routed IP.");
+                }
+            });
+        }
+    });
+}
+
+function addEventupdateInterface() {
+    $('.updateinterface').off('click');
+    $('.updateinterface').click(function(event) {
+        event.preventDefault();
+        hideErrors();
+        
+        if(confirm('Are you sure you want to '+action+' bond0?'))
+        {          
+            var button  = $(this); 
+            var action  = button.text();                     
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: { hivelocityAction: "updateInterface",actions:action },
+            }).done(function(dataJson) { 
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+
+                    $('#successmsg').css("display","block");
+                    $('#successmsg').text("Request Successfully Submitted.");
+                    setTimeout(function() {
+                        $('#successmsg').css("display","none");
+                    }, 3000);
+
+                    $('#interfacetask').css("display","block");
+                    $('#interfacetask').text("Account has 1 queued network tasks. Changes to this interface are disabled until the tasks complete. Estimated time: 30 seconds");
+                    setTimeout(function() {
+                        $('#interfacetask').css("display","none");
+                    }, 10000);
+
+                    if(action=="Disable")
+                    {
+                        button.text("Enable");
+                    }
+                    else
+                    {
+                        button.text("Disable");
+                    }
+                    
+                } else {
+                    displayError("Main", "Failed to "+action+" interface");
+                }
+            });
+        }
+    });
+}
+
+function addEventRemoveAllRouting() {
+    $('.removeAllrouting').off('click');
+    $('.removeAllrouting').click(function(event) {
+        event.preventDefault();
+        hideErrors();
+        
+        if(confirm('Are you sure you want to clear all port configurations?This action is irreversible and may result in your device becoming unreachable.'))
+        {          
+            var button  = $(this); 
+            var action  = button.text();                      
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: { hivelocityAction: "removeallrouting" },
+            }).done(function(dataJson) { 
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+
+                    $('#successmsg').css("display","block");
+                    $('#successmsg').text("Request Successfully Submitted.");
+                    setTimeout(function() {
+                        $('#successmsg').css("display","none");
+                    }, 3000);
+
+                    $('#interfacetask').css("display","block");
+                    $('#interfacetask').text("Account has 1 queued network tasks. Changes to this interface are disabled until the tasks complete. Estimated time: 30 seconds");
+                    setTimeout(function() {
+                        $('#interfacetask').css("display","none");
+                    }, 10000);
+
+                    $('#vlanRouteListTable').hide();
+                    var mySelect = $('.routevlanIdselect');
+                    $.each(data.response, function(key, value) {   
+                        mySelect.append(value);
+                    });
+
+                } else {
+                    displayError("Main", "Failed to remove all routings");
+                }
+            });
+        }
+    });
+}
+
+function addEventRequestIps() {
+    $('#requestIpButton').off('click');
+    $('#requestIpButton').click(function(event) { 
+        event.preventDefault();
+        hideErrors();
+        var button = $(this);
         button.attr('disabled', 'disabled');
         $.post({
             type: "POST",
             url: "",
-            data: form.serialize(),
+            data: $('#requestIps').serialize(),
         }).done(function(dataJson) {
             button.removeAttr("disabled");
-            var data = jQuery.parseJSON(dataJson);
-            if(data.result == "success") {
-                button.closest("tr").remove();
+            var data = jQuery.parseJSON(dataJson); 
+            if(data.result == "success") { 
+                
+                $('#successmsg').css("display","block");
+                $('#successmsg').text("Request Successfully Submitted.");
+                setTimeout(function() {
+                    $('#successmsg').css("display","none");
+                }, 3000);
+                
             } else {
-                displayError("Main", "Failed to remove domain.");
+                if(data.message != "Action Failed") {
+                    displayError("Main", data.message);
+                } else {
+                    displayError("Main",  "Failed to Request IP.");
+                }
+               
+            }
+        });
+    });
+}
+
+function addEventPowerStatus() {
+    $('.powerstatusbtn').off('click');
+    $('.powerstatusbtn').click(function(event) { 
+        event.preventDefault();
+        hideErrors();
+        var button = $(this);
+        button.attr('disabled', 'disabled');
+        var status = $(this).text();
+        $.post({
+            type: "POST",
+            url: "",
+            data: { hivelocityAction:'changePowerstatus',status:status },
+        }).done(function(dataJson) {
+            button.removeAttr("disabled");
+            var data = jQuery.parseJSON(dataJson); 
+            if(data.result == "success") { 
+                button.text('POWER '+data.response.powerStatus);
+                if(data.response.powerStatus=='ON')
+                {
+                    $('#powerstatus').text('OFF');
+                }
+                else if(data.response.powerStatus=='OFF')
+                {
+                    $('#powerstatus').text('ON');
+                }
+            } else {
+                if(data.message != "Action Failed") {
+                    displayError("Main", data.message);
+                } else {
+                    displayError("Main",  "Failed to change power status.");
+                }
+               
             }
         });
     });
@@ -169,7 +666,7 @@ function addEventEditRecord() {
         var recordData = button.data().recordData;
         $('#dnsEditRecordTable').children().remove();
         var html = getRecordEditRow(recordData);
-        $('#dnsEditRecordTable').append(html);
+        $('#dnsEditRecordTable tbody').append(html);
         addEventCancelRecord();
         addEventSaveRecord();
     });
@@ -222,22 +719,24 @@ function addEventRemoveRecord() {
     $('.removeRecordButton').click(function(event) {
         event.preventDefault();
         hideErrors();
-        var button  = $(this);
-        var form    = $(this).parent();
-        button.attr('disabled', 'disabled');
-        $.post({
-            type: "POST",
-            url: "",
-            data: form.serialize(),
-        }).done(function(dataJson) {
-            button.removeAttr("disabled");
-            var data = jQuery.parseJSON(dataJson);
-            if(data.result == "success") {
-                button.closest("tr").remove();
-            } else {
-                displayError("DnsModal",  "Failed to remove DNS record.");
-            }
-        });
+        if(confirm('Are you sure you want to delete?')){
+            var button  = $(this);
+            var form    = $(this).parent().parent();
+            button.attr('disabled', 'disabled');
+            $.post({
+                type: "POST",
+                url: "",
+                data: form.serialize(),
+            }).done(function(dataJson) {
+                button.removeAttr("disabled");
+                var data = jQuery.parseJSON(dataJson);
+                if(data.result == "success") {
+                    button.closest("tr").remove();
+                } else {
+                    displayError("DnsModal",  "Failed to remove DNS record.");
+                }
+            });
+        }
     });
 }
 
@@ -331,7 +830,7 @@ function getRecordRow(recordData) {
     }        
     html +=     '       <td></td>' +
                 '       <td style="width:1%">' +
-                '           <button type="button" class="btn btn-primary editRecordButton"  data-record-data= \'' + JSON.stringify(recordData) + '\'>' +
+                '           <button type="button" class="btn btn-sm btn-primary editRecordButton"  data-record-data= \'' + JSON.stringify(recordData) + '\'>' +
                 '               Edit' +
                 '           </button>' +
                 '       </td>' +
@@ -341,7 +840,7 @@ function getRecordRow(recordData) {
                 '               <input type="hidden" name="hivelocityDomainId"      value="' + recordData.domainId + '">' +
                 '               <input type="hidden" name="hivelocityRecordType"    value="' + recordData.type + '">' +
                 '               <input type="hidden" name="hivelocityRecordId"      value="' + recordData.id + '">' +
-                '               <button class="removeRecordButton btn btn-danger">Remove</button>' +
+                '               <button class="removeRecordButton btn btn-sm btn-danger">Remove</button>' +
                 '           </form>' +
                 '       </td>' +
                 '   </tr>';
@@ -403,7 +902,7 @@ function getRecordAddRow(domainId, recordType) {
                 '               <input type="hidden"                        name="hivelocityAction"                 value="addRecord">' +
                 '               <input type="hidden"                        name="hivelocityRecordType"             value="' + recordType + '">' +
                 '               <input type="hidden"                        name="hivelocityDomainId"               value="' + domainId + '">' +
-                '               <button type="button" class="btn btn-success addRecordButton">' +
+                '               <button type="button" class="btn btn-sm btn-success addRecordButton">' +
                 '                   Add&nbsp;Record' +
                 '               </button>' +
                 '           </td>' +
@@ -469,12 +968,12 @@ function getRecordEditRow(recordData) {
                 '               <input type="hidden"                        name="hivelocityRecordType"             value="' + recordData.type + '">' +
                 '               <input type="hidden"                        name="hivelocityDomainId"               value="' + recordData.domainId + '">' +
                 '               <input type="hidden"                        name="hivelocityRecordId"               value="' + recordData.id + '">' +
-                '               <button type="button" class="btn btn-success saveRecordButton">' +
+                '               <button type="button" class="btn btn-sm btn-success saveRecordButton">' +
                 '                   Save&nbsp;Record' +
                 '               </button>' +
                 '           </td>' +
                 '           <td style="width:1%">' +
-                '               <button type="button" class="btn btn-secondary cancelRecordButton">' +
+                '               <button type="button" class="btn btn-sm btn-secondary cancelRecordButton">' +
                 '                   Cancel' +
                 '               </button>' +
                 '           </td>' +
