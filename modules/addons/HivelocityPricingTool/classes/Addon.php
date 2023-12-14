@@ -101,6 +101,8 @@ class Addon {
         $success    = false;
         $error      = false;
         $productList            = Helpers::getProductList();
+        $totalActiveProducts    = Helpers::countActiveProducts();
+        $totalHiddenProducts    = Helpers::countHiddenProducts();
         try {
             if($action == "updatePricing") { 
 
@@ -184,7 +186,8 @@ class Addon {
             $remoteProductPrice = $remoteProductPrice / $usdRate;
             
             $smartyVarsProductList[$productId] = array(
-                "name" => $productData["name"]
+                "name" => $productData["name"],
+                "hidden" => $productData["hidden"]
             );
 
             foreach($currencyList as $currencyData) {
@@ -209,7 +212,9 @@ class Addon {
         }
         
         $smarty                 = new \Smarty();
-        
+
+        $smarty->assign('activeProducts',  $totalActiveProducts);
+        $smarty->assign('hiddenProducts',  $totalHiddenProducts); 
         $smarty->assign('productList',  $smartyVarsProductList);
         $smarty->assign('currencyList', $smartyVarsCurrencyList);
         $smarty->assign('success',      $success);
