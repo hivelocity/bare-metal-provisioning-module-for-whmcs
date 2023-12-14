@@ -477,6 +477,43 @@ class Helpers {
         }
         return $row["servertype"];
     }
+
+    static public function countActiveProducts() {
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT count(1) total FROM tblproducts WHERE hidden = 0 and servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetch();
+        $pdo->commit();
+
+        return $rows["total"];
+    }
+
+    static public function countHiddenProducts() {
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT count(1) total FROM tblproducts WHERE hidden = 1 and servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetch();
+        $pdo->commit();
+
+        return $rows["total"];
+    }
+
+    static public function getActiveProductList() {
+
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT * FROM tblproducts WHERE hidden = 0 and servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+
+        return $rows;
+    }
     
     static public function getProductList() {
         
