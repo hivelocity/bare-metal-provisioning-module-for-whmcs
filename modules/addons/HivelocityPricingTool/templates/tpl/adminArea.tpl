@@ -51,7 +51,16 @@
             {/if}
         </tbody>
     </table>
-             
+    <table style="margin-bottom: 10px">
+        <tbody>
+            <tr>
+              <td>Active: {$activeProducts}</td>
+            </tr>
+            <tr>
+              <td>Out of stock: {$hiddenProducts}</td>
+            </tr>
+        </tbody>      
+    </table> 
     {foreach from = $currencyList key = currencyId item = currencyData}
         <div id = "priceForm{$currencyId}" class = "priceForm" hidden>
             <form method="post" action="">
@@ -64,6 +73,7 @@
                             <th>Name</th>
                             <th>Remote Price</th>
                             <th>Local Price</th>
+                            <th>Status</th>
                             <th>Profit</th>
                         </tr>
                     </thead>
@@ -78,6 +88,7 @@
                                 <td>{$productData.name}</td>
                                 <td><input type = "hidden" value = "{$productData.remotePrice.$currencyId}" class = "form-control input-inline input-100 remotePriceField"   >{$productData.remotePrice.$currencyId} {$currencyData.suffix}</td>
                                 <td><input type = "text"    name = "localPrice[{$counter}]"     value = "{$productData.localPrice.$currencyId}"  class = "form-control input-inline input-100 priceField"   > {$currencyData.suffix}</td>
+                                <td>{if $productData.hidden === 1}Out of stock{else}Active{/if}</td>
                                 <td><input type = "text" value = "{$productData.profit.$currencyId}"      class = "form-control input-inline input-100 profitField"  > %</td>
                             </tr>
                             {assign var = counter value = $counter + 1}
