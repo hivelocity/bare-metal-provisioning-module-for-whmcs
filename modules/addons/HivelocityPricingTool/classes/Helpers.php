@@ -5,10 +5,6 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class Helpers {
     
-    static public function debugLog($desc, $data) {
-        logmodulecall("HivelocityPricingTool Debug Log", $desc, $data, "", "");
-    }
-    
     static public function getAdonConfig() {
         
         $pdo            = Capsule::connection()->getPdo();
@@ -27,7 +23,102 @@ class Helpers {
         
         return $addonConfig;
     }
-    
+
+    static public function updateProductGroupConfig($productGroupId) {
+        $productGroupId  = intval($productGroupId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproducts SET gid = ? WHERE servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$productGroupId]);
+        $pdo->commit();
+    }
+
+    static public function updateServerGroupConfig($serverGroupId) {
+        $serverGroupId  = intval($serverGroupId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "UPDATE tblproducts SET servergroup = ? WHERE servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$serverGroupId]);
+        $pdo->commit();
+    }
+
+    static public function removeProductGroup($productGroupId) {
+        $productGroupId  = intval($productGroupId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "DELETE tblproductgroups WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$productGroupId]);
+        $pdo->commit();
+    }
+
+    static public function removeServer($serverId) {
+        $serverId  = intval($serverId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "DELETE tblservers WHERE id = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$serverId]);
+        $pdo->commit();
+    }
+
+    static public function removeServerGroup($serverGroupId) {
+        $serverGroupId  = intval($serverGroupId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "DELETE tblservergroup WHERE groupid = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$serverGroupId]);
+        $pdo->commit();
+    }
+
+    static public function getServerId($serverGroupId) {
+        $serverGroupId  = intval($serverGroupId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT serverid FROM tblservergroupsrel WHERE groupid = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$serverGroupId]);
+        $row        = $statement->fetch();
+        $pdo->commit();
+        
+        if(isset($row["serverid"]) && !empty($row["serverid"])) {
+            return $row["serverid"];
+        } else {
+            return false;
+        }
+    }
+
+    static public function removeServerGroupRel($serverGroupId) {
+        $serverGroupId  = intval($serverGroupId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "DELETE tblservergroupsrel WHERE groupid = ?";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$serverGroupId]);
+        $pdo->commit();
+    }
+
+    static public function removeNotUsedProduct($productId) {
+        $productId  = intval($productId);
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "DELETE FROM tblproducts WHERE hidden = 1 and servertype = 'Hivelocity' and id = ? and not exists (select 1 from tblhosting h where h.packageid = tblproducts.id and tblproducts.servergroup = h.server)";
+        $statement  = $pdo->prepare($query);
+        $statement->execute([$productId]);
+        $pdo->commit();
+    }
+
     static public function isNotificationEnabled() {
         
         $pdo = Capsule::connection()->getPdo();
@@ -454,6 +545,32 @@ class Helpers {
         $pdo        = Capsule::connection()->getPdo();
         $pdo->beginTransaction();
         $query      = "SELECT * FROM tblproducts WHERE servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
+
+    static public function getProductGroupsFromProducts() {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT DISTINCT gid FROM tblproducts WHERE servertype = 'Hivelocity'";
+        $statement  = $pdo->prepare($query);
+        $statement->execute();
+        $rows       = $statement->fetchAll();
+        $pdo->commit();
+        
+        return $rows;
+    }
+
+    static public function getServerGroupsFromProducts() {
+        
+        $pdo        = Capsule::connection()->getPdo();
+        $pdo->beginTransaction();
+        $query      = "SELECT DISTINCT servergroup FROM tblproducts WHERE servertype = 'Hivelocity'";
         $statement  = $pdo->prepare($query);
         $statement->execute();
         $rows       = $statement->fetchAll();
