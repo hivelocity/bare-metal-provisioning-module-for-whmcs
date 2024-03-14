@@ -78,29 +78,6 @@ class Cron {
         $productGroupId     = $addonConfig["productGroup"];
         $debugMode          = $addonConfig["debugMode"];
         
-        $productGroups = Helpers::getProductGroupsFromProducts();
-        foreach($productGroup as $productGroups) {
-            if($productGroupId !== $productGroup) {
-                Helpers::removeProductGroup($productGroup);
-                if ($debugMode === "on") {
-                    logModuleCall('Hivelocity','synchronizeProducts','removeProductGroup',$productGroup);
-                }
-            }
-        }
-
-        $serverGroups = Helpers::getServerGroupsFromProducts();
-        foreach($serverGroup as $serverGroups) {
-            if($serverGroupId !== $serverGroup) {
-                $serverId = Helpers::getServerId($serverGroup);
-                Helpers::removeServerGroupRel($serverGroup);
-                Helpers::removeServerGroup($serverGroup);
-                Helpers::removeServer($serverId);
-                if ($debugMode === "on") {
-                    logModuleCall('Hivelocity','synchronizeProducts','removeServer',$serverId);
-                }
-            }
-        }
-
         Helpers::updateProductGroupConfig($productGroupId);
         Helpers::updateServerGroupConfig($serverGroupId);
 
@@ -221,10 +198,8 @@ class Cron {
                 Helpers::unhideProduct($localProductId);
             } else {
                 Helpers::hideProduct($localProductId);
-                Helpers::removeNotUsedProduct($localProductId);
-
                 if ($debugMode === "on") {
-                    logModuleCall('Hivelocity','synchronizeProducts','removeNotUsedProduct',$localProductId);
+                    logModuleCall('Hivelocity','synchronizeProducts','hideProduct',$localProductId);
                 }
             }
         }

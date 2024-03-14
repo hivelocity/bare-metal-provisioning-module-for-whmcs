@@ -128,6 +128,11 @@ function Hivelocity_ClientAreaCustomButtonArray($params) {
         if (is_null($devicePowerStatus)) return $deviceActions;
 
         $devicePowerStatus = isset($devicePowerStatus["powerStatus"]) ? $devicePowerStatus["powerStatus"] : '';
+        
+        $deviceDetails = \Hivelocity\classes\Api::getDeviceDetails($assignedDeviceId);
+        if (is_null($deviceDetails["spsStatus"])) {
+            unset($deviceActions["Reinstall"]);
+        }
 
         if ($devicePowerStatus == 'ON') {
             unset($deviceActions["Boot"]);
