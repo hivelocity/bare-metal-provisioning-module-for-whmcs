@@ -85,22 +85,14 @@ Move the contents of "servers" folder to the path of /whmcs/ installation folder
 
 ### Custom Options
 
-There are other options under the module setting of the product you can configure including Metric Billing Transfer In and Out or 95% In and Out.
+- There are other options under the module setting of the product you can configure including Metric Billing Transfer In and Out or 95% In and Out.
+- There are also addons which are included on the order form automatically when you generate configurable options.
+- cPanel, WHMCS, Litespeed Web Server, Managed Services, Load Balancing, Extra Bandwidth, DDOS Protection, Data Migration and Backup & Rapid Restore.
+- These modules currently only work with the six template.
+- If you would like to manage the prices with the Hivelocity pricing tool, select the billing cycles you want enabled and leave it 0.00 and click save, then later you can mark it up in the Hivelocity pricing tool.
+- Go to the Addons Menu then Hivelocity Pricing tool.
+- You can either set your Profit margin individually or on all your servers at the top of the page. Add your percentage and click save or hit enter if you are doing them individually.
+- Setup the cronjob - add modules\addons\HivelocityPricingTool\cron.php to your cron job table.
 
-There are also addons which are included on the order form automatically when you generate configurable options.
-
-cPanel, WHMCS, Litespeed Web Server, Managed Services, Load Balancing, Extra Bandwidth, DDOS Protection, Data Migration and Backup & Rapid Restore.
-
-These modules currently only work with the six template.
-
-If you would like to manage the prices with the Hivelocity pricing tool, select the billing cycles you want enabled and leave it 0.00 and click save.
-
-Then later you can mark it up in the Hivelocity pricing tool.
-
-Go to the Addons Menu then Hivelocity Pricing tool.
-
-You can either set your Profit margin individually or on all your servers at the top of the page. Add your percentage and click save or hit enter if you are doing them individually.
-
-Setup the cronjob - add modules\addons\HivelocityPricingTool\cron.php to your cron job table.
-
-For any questions or issues please contact our support team for assistance. Escalate to Developers if any bugs are found.
+> [!TIP]
+> For any questions or issues please contact our support team for assistance. Escalate to Developers if any bugs are found.
