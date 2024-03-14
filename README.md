@@ -1,8 +1,6 @@
 # What's New!
-Support for latest whmcs version 8.6.1/ Support for PHP 7.4 & 8.1.13, ioncube 12x
-
-# Auto creations / import of products and configurations options.
-
+- Support for latest whmcs version 8.6.1/ Support for PHP 7.4 & 8.1.13, ioncube 12x
+- Auto creations / import of products and configurations options.
 - DNS integration Domains NS records need to be pointed to our systems listed below.
 ```
 ns3.hivelocity.net
