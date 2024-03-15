@@ -41,6 +41,12 @@ class Addon {
                     "Size"              => "25",
                     "Description"       => "Check if you want to receive an email notification about the price change of Hivelocity products."
                 ),
+                "debugMode" => array (
+                    "FriendlyName"      => "Debug Mode",
+                    "Type"              => "yesno",
+                    "Size"              => "25",
+                    "Description"       => "Check if you want to enable debug mode"
+                ),
                 "productGroup" => array (
                     "FriendlyName"      => "Product Group", 
                     "Type"              => "dropdown", 

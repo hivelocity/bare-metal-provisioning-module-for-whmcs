@@ -596,6 +596,11 @@ SCRIPT;
         if($assignedDeviceId === false) {
             return 'Device has not yet finished provisioning.';
         }
+
+        $deviceDetails = Api::getDeviceDetails($assignedDeviceId);
+        if (is_null($deviceDetails["spsStatus"])) {
+            return 'The reload must be done manually, please contact support.';
+        }
         
         if(isset($params["configoptions"]["Operating System"])) {
             $osName           = $params["configoptions"]["Operating System"];
